@@ -104,6 +104,8 @@
   @keyframes ping{ from{ r:1; opacity:.9;} to{ r:22; opacity:0;} }
 
   .center-mark{filter:drop-shadow(0 0 5px var(--phosphor));}
+  .center-ring{ animation: centerPulse 2.6s ease-in-out infinite; transform-origin:center; }
+  @keyframes centerPulse{ 0%,100%{ opacity:0.5; r:9; } 50%{ opacity:0.15; r:13; } }
 
   .radar-ring{ stroke:var(--grid); fill:none; }
   .radar-cross{ stroke:var(--grid); }
@@ -180,7 +182,7 @@
 </style>
 </head>
 <body>
-<div class="version-badge">v1.8</div>
+<div class="version-badge">v1.9</div>
 <div class="wrap">
 
   <header>
@@ -257,7 +259,7 @@
       </div>
 
       <div class="detail" id="detailPanel">
-        <p class="card-title" style="margin-bottom:0;">Vald flygning</p>
+        <p class="card-title" style="margin-bottom:0;" id="detailTitle">Vald flygning</p>
         <div id="detailContent">
           <p class="detail-empty" style="margin-top:10px;">Klicka på ett flygplan i listan eller på radarn för detaljer.</p>
         </div>
@@ -288,7 +290,8 @@
     countdownSec: 15,
     fetching: false,
     preferredTransport: {},
-    refreshIntervalMs: 8000
+    refreshIntervalMs: 8000,
+    showingLocationInfo: false
   };
 
   var els = {
@@ -309,19 +312,21 @@
     emptyState: document.getElementById('emptyState'),
     loadingState: document.getElementById('loadingState'),
     detailContent: document.getElementById('detailContent'),
+    detailTitle: document.getElementById('detailTitle'),
     acTable: document.getElementById('acTable'),
     themeBtn: document.getElementById('themeBtn')
   };
 
-  // ---------- theme ----------
-  var THEME_KEY = 'luftrum-theme';
+  // ---------- persisted settings (localStorage; works once hosted, not in this preview) ----------
+  function safeGetStored(key){
+    try { return localStorage.getItem(key); } catch(e){ return null; }
+  }
+  function safeSetStored(key, val){
+    try { localStorage.setItem(key, val); } catch(e){ /* storage unavailable, ignore */ }
+  }
 
-  function safeGetStoredTheme(){
-    try { return localStorage.getItem(THEME_KEY); } catch(e){ return null; }
-  }
-  function safeSetStoredTheme(val){
-    try { localStorage.setItem(THEME_KEY, val); } catch(e){ /* storage unavailable, ignore */ }
-  }
+  var THEME_KEY = 'luftrum-theme';
+  var RANGE_KEY = 'luftrum-range-km';
 
   function applyTheme(theme){
     if (theme === 'light'){
@@ -333,13 +338,23 @@
     }
   }
 
-  applyTheme(safeGetStoredTheme());
+  applyTheme(safeGetStored(THEME_KEY));
+
+  // Restore the last-used range (falls back to the 50 km default if nothing saved
+  // or the saved value isn't one of the dropdown's options)
+  (function restoreRange(){
+    var saved = safeGetStored(RANGE_KEY);
+    if (saved && els.rangeSelect.querySelector('option[value="' + saved + '"]')){
+      els.rangeSelect.value = saved;
+      state.rangeKm = parseInt(saved, 10);
+    }
+  })();
 
   els.themeBtn.addEventListener('click', function(){
     var isLight = document.body.getAttribute('data-theme') === 'light';
     var next = isLight ? 'dark' : 'light';
     applyTheme(next);
-    safeSetStoredTheme(next);
+    safeSetStored(THEME_KEY, next);
   });
 
   // ---------- geo helpers ----------
@@ -687,6 +702,7 @@
   els.rangeSelect.addEventListener('change', function(){
     state.rangeKm = parseInt(els.rangeSelect.value, 10);
     els.rangeLabel.textContent = state.rangeKm + ' KM';
+    safeSetStored(RANGE_KEY, String(state.rangeKm));
     buildStaticScope();
     if (state.userLat !== null) fetchAircraft();
     else renderBlips();
@@ -744,9 +760,11 @@
     svg.appendChild(sweepGroup);
 
     // center marker (user)
-    var centerGroup = svgEl('g', {class:'center-mark'});
+    var centerGroup = svgEl('g', {class:'center-mark', style:'cursor:pointer;'});
+    centerGroup.appendChild(svgEl('circle', {cx:cx, cy:cy, r:16, fill:'transparent'})); // easy tap target
     centerGroup.appendChild(svgEl('circle', {class:'center-dot', cx:cx, cy:cy, r:4}));
     centerGroup.appendChild(svgEl('circle', {class:'center-ring', cx:cx, cy:cy, r:9, 'stroke-width':1, opacity:0.5}));
+    centerGroup.addEventListener('click', showLocationInfo);
     svg.appendChild(centerGroup);
 
     // group for blips (populated on each render)
@@ -916,6 +934,7 @@
   }
 
   function selectAircraft(icao){
+    state.showingLocationInfo = false;
     state.selectedIcao = (state.selectedIcao === icao) ? null : icao;
     render();
     renderDetail();
@@ -925,9 +944,120 @@
     }
   }
 
+  // ---------- location info (elevation, place, timezone, sunrise/sunset via zenith click) ----------
+  var locationInfoCache = {};
+
+  function showLocationInfo(){
+    if (state.userLat === null) return;
+    state.selectedIcao = null;
+    state.showingLocationInfo = true;
+    els.detailTitle.textContent = 'Din position';
+    render();
+    renderDetail();
+    fetchLocationInfo(state.userLat, state.userLon);
+  }
+
+  function fetchLocationInfo(lat, lon){
+    var key = lat.toFixed(3) + ',' + lon.toFixed(3);
+    var cached = locationInfoCache[key];
+    if (cached && cached.status !== 'error') { renderDetail(); return; }
+
+    locationInfoCache[key] = { status:'loading' };
+    renderDetail();
+
+    var elevUrl = 'https://api.open-meteo.com/v1/elevation?latitude=' + lat + '&longitude=' + lon;
+    var geoUrl = 'https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=' + lat + '&longitude=' + lon + '&localityLanguage=sv';
+    var sunUrl = 'https://api.sunrise-sunset.org/json?lat=' + lat + '&lng=' + lon + '&formatted=0';
+
+    Promise.all([
+      fetchJsonResilient(elevUrl, 'elevation').catch(function(e){ return { __error: e.message }; }),
+      fetchJsonResilient(geoUrl, 'geocode').catch(function(e){ return { __error: e.message }; }),
+      fetchJsonResilient(sunUrl, 'sun').catch(function(e){ return { __error: e.message }; })
+    ]).then(function(results){
+      var elevRes = results[0], geoRes = results[1], sunRes = results[2];
+      var entry = { status:'ok' };
+
+      if (elevRes && !elevRes.__error && elevRes.elevation && typeof elevRes.elevation[0] === 'number'){
+        entry.elevation = elevRes.elevation[0];
+      }
+      if (geoRes && !geoRes.__error){
+        entry.place = {
+          locality: geoRes.locality || geoRes.city || geoRes.localityInfo && geoRes.localityInfo.administrative && geoRes.localityInfo.administrative[0] && geoRes.localityInfo.administrative[0].name || null,
+          subdivision: geoRes.principalSubdivision || null,
+          country: geoRes.countryName || null
+        };
+      }
+      if (sunRes && !sunRes.__error && sunRes.results){
+        entry.sun = sunRes.results;
+      }
+      try { entry.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch(e){ entry.timezone = null; }
+
+      locationInfoCache[key] = entry;
+      if (state.showingLocationInfo) renderDetail();
+    });
+  }
+
+  function formatLocalTime(isoUtc){
+    if (!isoUtc) return '—';
+    try {
+      var d = new Date(isoUtc);
+      return d.toLocaleTimeString('sv-SE', { hour:'2-digit', minute:'2-digit' });
+    } catch(e){ return '—'; }
+  }
+
+  function renderLocationDetail(){
+    var lat = state.userLat, lon = state.userLon;
+    var key = lat.toFixed(3) + ',' + lon.toFixed(3);
+    var entry = locationInfoCache[key];
+
+    var html = '<div class="detail-grid">' +
+      '<div class="detail-item"><div class="k">Latitud</div><div class="v" style="font-size:13px;">' + lat.toFixed(4) + '°</div></div>' +
+      '<div class="detail-item"><div class="k">Longitud</div><div class="v" style="font-size:13px;">' + lon.toFixed(4) + '°</div></div>';
+
+    if (!entry || entry.status === 'loading'){
+      html += '<div class="detail-item"><div class="k">Höjd över havet</div><div class="v" style="font-size:13px;">Hämtar…</div></div>';
+      html += '</div><p class="route-status" style="margin-top:10px;">Hämtar platsdata…</p>';
+      els.detailContent.innerHTML = html;
+      return;
+    }
+
+    html += '<div class="detail-item"><div class="k">Höjd över havet</div><div class="v">' + (typeof entry.elevation === 'number' ? Math.round(entry.elevation) + ' m' : '—') + '</div></div>';
+    if (entry.timezone){
+      html += '<div class="detail-item"><div class="k">Tidszon</div><div class="v" style="font-size:13px;">' + entry.timezone + '</div></div>';
+    }
+    html += '</div>';
+
+    if (entry.place && (entry.place.locality || entry.place.subdivision || entry.place.country)){
+      var placeParts = [entry.place.locality, entry.place.subdivision, entry.place.country].filter(Boolean);
+      html += '<div class="route-block"><div class="route-airline"><strong>' + placeParts.join(', ') + '</strong></div></div>';
+    }
+
+    if (entry.sun){
+      html += '<div class="route-block">';
+      html += '<div class="route-airline">Sol (lokal tid, ungefärlig)</div>';
+      html += '<div class="detail-grid" style="grid-template-columns:repeat(3,1fr);">';
+      html += '<div class="detail-item"><div class="k">Soluppgång</div><div class="v" style="font-size:14px;">' + formatLocalTime(entry.sun.sunrise) + '</div></div>';
+      html += '<div class="detail-item"><div class="k">Solnedgång</div><div class="v" style="font-size:14px;">' + formatLocalTime(entry.sun.sunset) + '</div></div>';
+      html += '<div class="detail-item"><div class="k">Dagslängd</div><div class="v" style="font-size:14px;">' + (entry.sun.day_length ? Math.round(entry.sun.day_length/3600) + 't ' + Math.round((entry.sun.day_length%3600)/60) + 'm' : '—') + '</div></div>';
+      html += '</div></div>';
+    }
+
+    els.detailContent.innerHTML = html;
+  }
+
   function renderDetail(){
+    if (state.showingLocationInfo){
+      els.detailTitle.textContent = 'Din position';
+      if (state.userLat === null){
+        els.detailContent.innerHTML = '<p class="detail-empty" style="margin-top:10px;">Ingen position tillgänglig ännu.</p>';
+        return;
+      }
+      renderLocationDetail();
+      return;
+    }
+    els.detailTitle.textContent = 'Vald flygning';
     if (!state.selectedIcao){
-      els.detailContent.innerHTML = '<p class="detail-empty" style="margin-top:10px;">Klicka på ett flygplan i listan eller på radarn för detaljer.</p>';
+      els.detailContent.innerHTML = '<p class="detail-empty" style="margin-top:10px;">Klicka på ett flygplan i listan eller på radarn för detaljer — eller på din egen position (mitten) för platsdata.</p>';
       return;
     }
     var ac = state.aircraft.filter(function(a){ return a.icao24 === state.selectedIcao; })[0];
