@@ -133,9 +133,6 @@
 
   .scope-footnote{font-size:10.5px; color:var(--text-faint); text-align:center; margin-top:10px; letter-spacing:.02em;}
 
-  .scope-wrap .leaflet-control-attribution{background:rgba(0,0,0,0.35) !important; color:var(--text-faint) !important; font-size:8px !important; padding:1px 4px !important; z-index:4;}
-  .scope-wrap .leaflet-control-attribution a{color:var(--text-dim) !important;}
-
   .empty, .loading{padding:30px 10px; text-align:center; color:var(--text-dim); font-size:13px; line-height:1.6;}
   .loading::after{content:'▮'; animation:blink 1s steps(2) infinite; margin-left:4px;}
   @keyframes blink{ 50%{ opacity:0;} }

@@ -138,7 +138,7 @@
     if (typeof L === 'undefined' || map) return;
     map = L.map('miniMap', {
       zoomControl: false,
-      attributionControl: true,
+      attributionControl: false,
       dragging: false,
       touchZoom: false,
       scrollWheelZoom: false,
