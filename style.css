@@ -91,9 +91,18 @@
   .card-title{font-family:var(--mono); font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--text-dim); margin:0 0 12px; display:flex; justify-content:space-between; align-items:center;}
 
   .scope-wrap{position:relative; width:100%; aspect-ratio:1/1; border-radius:14px; overflow:hidden;
-    background:radial-gradient(circle at 50% 50%, var(--scope-bg0) 0%, var(--scope-bg1) 78%, var(--scope-bg2) 100%);
+    background:var(--scope-bg2);
     box-shadow: inset 0 0 40px rgba(0,0,0,0.35), inset 0 0 2px var(--grid-strong);}
-  .scope-wrap svg{width:100%; height:100%; display:block;}
+  .scope-wrap svg{width:100%; height:100%; display:block; position:relative; z-index:3; background:transparent;}
+
+  /* Map sits as a backdrop layer, filling the whole radar face */
+  #miniMap{position:absolute; inset:0; z-index:1; width:100%; height:100%; background:var(--panel-raised);
+    filter:grayscale(50%) contrast(0.78) brightness(1.1) opacity(0.85); pointer-events:none;}
+  /* Radar-screen tint over the map, so terrain/roads read as texture rather than competing
+     with the rings, sweep, and blips drawn in the SVG layer above */
+  .map-veil{position:absolute; inset:0; z-index:2; pointer-events:none;
+    background:radial-gradient(circle at 50% 50%, var(--scope-bg0) 0%, var(--scope-bg1) 65%, var(--scope-bg2) 100%);
+    opacity:0.62;}
 
   .sweep{transform-origin:50% 50%; animation:spin 4.5s linear infinite;}
   @keyframes spin{ to{ transform:rotate(360deg);} }
@@ -124,18 +133,8 @@
 
   .scope-footnote{font-size:10.5px; color:var(--text-faint); text-align:center; margin-top:10px; letter-spacing:.02em;}
 
-  /* Mini-map: deliberately muted so it reads as context, not competition for the radar */
-  .map-wrap{position:relative; margin-top:12px; border-radius:10px; overflow:hidden; border:1px solid var(--grid-strong); height:150px;}
-  #miniMap{width:100%; height:100%; background:var(--panel-raised);
-    filter:grayscale(45%) contrast(0.82) brightness(1.12) opacity(0.8);}
-  .map-veil{position:absolute; inset:0; background:var(--bg); opacity:0.16; pointer-events:none;}
-  .map-wrap .leaflet-control-zoom{border:none !important; box-shadow:none !important; opacity:0.55; transition:opacity .15s;}
-  .map-wrap .leaflet-control-zoom:hover{opacity:0.95;}
-  .map-wrap .leaflet-control-zoom a{background:var(--panel-raised) !important; color:var(--text-dim) !important; border-color:var(--grid-strong) !important;}
-  .map-wrap .leaflet-control-attribution{background:rgba(0,0,0,0.35) !important; color:var(--text-faint) !important; font-size:8.5px !important; padding:1px 4px !important;}
-  .map-wrap .leaflet-control-attribution a{color:var(--text-dim) !important;}
-  .user-marker-dot{width:100%; height:100%; background:var(--amber); border:2px solid var(--bg); border-radius:50%; box-shadow:0 0 6px var(--amber);}
-  .user-marker-icon{background:transparent !important; border:none !important;}
+  .scope-wrap .leaflet-control-attribution{background:rgba(0,0,0,0.35) !important; color:var(--text-faint) !important; font-size:8px !important; padding:1px 4px !important; z-index:4;}
+  .scope-wrap .leaflet-control-attribution a{color:var(--text-dim) !important;}
 
   .empty, .loading{padding:30px 10px; text-align:center; color:var(--text-dim); font-size:13px; line-height:1.6;}
   .loading::after{content:'▮'; animation:blink 1s steps(2) infinite; margin-left:4px;}

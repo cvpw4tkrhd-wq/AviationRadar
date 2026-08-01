@@ -81,7 +81,6 @@
     var next = isLight ? 'dark' : 'light';
     applyTheme(next);
     safeSetStored(THEME_KEY, next);
-    updateMapTheme();
   });
 
   // ---------- geo helpers ----------
@@ -132,20 +131,22 @@
     lamp.className = 'lamp' + (lampState && lampState !== 'off' ? ' ' + lampState : '');
   }
 
-  // ---------- mini-map (pale/muted context map beneath the radar) ----------
-  var map = null, userMarker = null, rangeCircle = null;
-
-  function getCssVar(name){
-    return getComputedStyle(document.body).getPropertyValue(name).trim();
-  }
+  // ---------- mini-map (passive geographic backdrop behind the radar) ----------
+  var map = null;
 
   function initMap(lat, lon){
     if (typeof L === 'undefined' || map) return;
     map = L.map('miniMap', {
-      zoomControl: true,
+      zoomControl: false,
       attributionControl: true,
-      scrollWheelZoom: false
-    }).setView([lat, lon], 10);
+      dragging: false,
+      touchZoom: false,
+      scrollWheelZoom: false,
+      doubleClickZoom: false,
+      boxZoom: false,
+      keyboard: false,
+      tap: false
+    });
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; OpenStreetMap &copy; CARTO',
@@ -153,38 +154,26 @@
       maxZoom: 19
     }).addTo(map);
 
-    var icon = L.divIcon({
-      className: 'user-marker-icon',
-      html: '<div class="user-marker-dot"></div>',
-      iconSize: [14, 14],
-      iconAnchor: [7, 7]
-    });
-    userMarker = L.marker([lat, lon], { icon: icon }).addTo(map);
-
-    rangeCircle = L.circle([lat, lon], {
-      radius: state.rangeKm * 1000,
-      color: getCssVar('--amber'),
-      weight: 1,
-      fillOpacity: 0.05
-    }).addTo(map);
-
+    fitMapToRange(lat, lon, state.rangeKm);
     setTimeout(function(){ if (map) map.invalidateSize(); }, 150);
+  }
+
+  // Frames the map so its visible area roughly matches the radar's current range ring,
+  // using the same bounding-box math the API queries use for consistency.
+  function fitMapToRange(lat, lon, rangeKm){
+    if (!map) return;
+    var bb = boundingBox(lat, lon, rangeKm);
+    map.fitBounds([[bb.lamin, bb.lomin], [bb.lamax, bb.lomax]], { animate: false });
   }
 
   function updateMapPosition(lat, lon){
     if (typeof L === 'undefined') return;
     if (!map){ initMap(lat, lon); return; }
-    map.setView([lat, lon], map.getZoom());
-    if (userMarker) userMarker.setLatLng([lat, lon]);
-    if (rangeCircle) rangeCircle.setLatLng([lat, lon]).setRadius(state.rangeKm * 1000);
+    fitMapToRange(lat, lon, state.rangeKm);
   }
 
   function updateMapRange(){
-    if (rangeCircle) rangeCircle.setRadius(state.rangeKm * 1000);
-  }
-
-  function updateMapTheme(){
-    if (rangeCircle) rangeCircle.setStyle({ color: getCssVar('--amber') });
+    if (map && state.userLat !== null) fitMapToRange(state.userLat, state.userLon, state.rangeKm);
   }
 
   // ---------- location (browser API + 3 IP services raced, fastest wins) ----------
