@@ -182,7 +182,7 @@
 </style>
 </head>
 <body>
-<div class="version-badge">v2.0</div>
+<div class="version-badge">v2.1</div>
 <div class="wrap">
 
   <header>
@@ -286,11 +286,11 @@
     sortKey: 'dist',
     sortAsc: true,
     refreshTimer: null,
-    countdownTimer: null,
-    countdownSec: 15,
+    failureStreak: 0,
     fetching: false,
     preferredTransport: {},
-    refreshIntervalMs: 5000,
+    refreshIntervalMs: 6000,
+    maxBackoffMs: 60000,
     showingLocationInfo: false
   };
 
@@ -510,14 +510,12 @@
   }
 
   function transportList(url){
-    var cb = Date.now() + '' + Math.floor(Math.random() * 1000); // defeats proxy/CDN-side response caching
-    var directUrl = url + (url.indexOf('?') === -1 ? '?' : '&') + '_cb=' + cb;
     var encoded = encodeURIComponent(url);
     return [
-      { label: 'direkt', url: directUrl, timeout: 5000 },
-      { label: 'codetabs-proxy', url: 'https://api.codetabs.com/v1/proxy?quest=' + encoded + '%26_cb%3D' + cb, timeout: 8000 },
-      { label: 'allorigins-proxy', url: 'https://api.allorigins.win/raw?url=' + encoded + '%26_cb%3D' + cb, timeout: 8000 },
-      { label: 'corsproxy.io', url: 'https://corsproxy.io/?url=' + encoded + '%26_cb%3D' + cb, timeout: 8000 }
+      { label: 'direkt', url: url, timeout: 5000 },
+      { label: 'codetabs-proxy', url: 'https://api.codetabs.com/v1/proxy?quest=' + encoded, timeout: 8000 },
+      { label: 'allorigins-proxy', url: 'https://api.allorigins.win/raw?url=' + encoded, timeout: 8000 },
+      { label: 'corsproxy.io', url: 'https://corsproxy.io/?url=' + encoded, timeout: 8000 }
     ];
   }
 
@@ -646,9 +644,12 @@
 
     function finishIfDone(){
       if (!settled && errors.length >= expected){
-        setStatus('Kunde inte hämta flygdata från någon källa (' + errors.join(' · ') + '). Försöker igen…', 'err');
+        state.failureStreak++;
+        var backoff = Math.min(state.refreshIntervalMs * Math.pow(2, state.failureStreak), state.maxBackoffMs);
+        setStatus('Kunde inte hämta flygdata från någon källa (' + errors.join(' · ') + '). Försöker igen om ' + Math.round(backoff/1000) + 's…', 'err');
         state.fetching = false;
         els.loadingState.style.display = 'none';
+        scheduleNextFetch(backoff);
       }
     }
 
@@ -683,22 +684,32 @@
 
   function applyAircraftResult(list, sourceName){
     state.aircraft = list;
+    state.failureStreak = 0;
     setStatus('Live (' + sourceName + ') — ' + list.length + ' flygplan inom ' + state.rangeKm + ' km', 'live');
     render();
     state.fetching = false;
+    scheduleNextFetch(state.refreshIntervalMs);
+  }
+
+  function scheduleNextFetch(delayMs){
+    if (state.refreshTimer) clearTimeout(state.refreshTimer);
+    state.refreshTimer = setTimeout(fetchAircraft, delayMs);
   }
 
   function startTracking(){
-    if (state.refreshTimer) clearInterval(state.refreshTimer);
-    if (state.countdownTimer) clearInterval(state.countdownTimer);
+    if (state.refreshTimer) clearTimeout(state.refreshTimer);
+    state.failureStreak = 0;
     fetchAircraft();
-    state.countdownSec = state.refreshIntervalMs / 1000;
-    state.refreshTimer = setInterval(fetchAircraft, state.refreshIntervalMs);
   }
 
   els.refreshBtn.addEventListener('click', function(){
-    if (state.userLat !== null) fetchAircraft();
-    else requestLocation();
+    if (state.userLat !== null){
+      state.failureStreak = 0;
+      if (state.refreshTimer) clearTimeout(state.refreshTimer);
+      fetchAircraft();
+    } else {
+      requestLocation();
+    }
   });
 
   els.rangeSelect.addEventListener('change', function(){
