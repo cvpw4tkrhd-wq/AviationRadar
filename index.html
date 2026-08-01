@@ -180,7 +180,7 @@
 </style>
 </head>
 <body>
-<div class="version-badge">v1.7</div>
+<div class="version-badge">v1.8</div>
 <div class="wrap">
 
   <header>
@@ -286,7 +286,9 @@
     refreshTimer: null,
     countdownTimer: null,
     countdownSec: 15,
-    fetching: false
+    fetching: false,
+    preferredTransport: {},
+    refreshIntervalMs: 8000
   };
 
   var els = {
@@ -492,28 +494,29 @@
       });
   }
 
-  // Try the direct request and three independent CORS proxies at the same time —
-  // whichever answers first wins. This avoids depending on any single (often flaky)
-  // free proxy service, and avoids waiting for a slow one before trying the next.
-  function fetchJsonResilient(url){
+  function transportList(url){
+    var encoded = encodeURIComponent(url);
+    return [
+      { label: 'direkt', url: url, timeout: 5000 },
+      { label: 'codetabs-proxy', url: 'https://api.codetabs.com/v1/proxy?quest=' + encoded, timeout: 8000 },
+      { label: 'allorigins-proxy', url: 'https://api.allorigins.win/raw?url=' + encoded, timeout: 8000 },
+      { label: 'corsproxy.io', url: 'https://corsproxy.io/?url=' + encoded, timeout: 8000 }
+    ];
+  }
+
+  function raceTransports(candidates, onWin){
     return new Promise(function(resolve, reject){
       var settled = false;
       var errors = [];
-      var encoded = encodeURIComponent(url);
-      var attempts = [
-        { p: fetchJsonTimeout(url, 5000), label: 'direkt' },
-        { p: fetchJsonTimeout('https://api.codetabs.com/v1/proxy?quest=' + encoded, 8000), label: 'codetabs-proxy' },
-        { p: fetchJsonTimeout('https://api.allorigins.win/raw?url=' + encoded, 8000), label: 'allorigins-proxy' },
-        { p: fetchJsonTimeout('https://corsproxy.io/?url=' + encoded, 8000), label: 'corsproxy.io' }
-      ];
-      attempts.forEach(function(a){
-        a.p.then(function(data){
+      candidates.forEach(function(t){
+        fetchJsonTimeout(t.url, t.timeout).then(function(data){
           if (settled) return;
           settled = true;
+          if (onWin) onWin(t.label);
           resolve(data);
         }).catch(function(err){
-          errors.push(a.label + ': ' + err.message);
-          if (!settled && errors.length >= attempts.length){
+          errors.push(t.label + ': ' + err.message);
+          if (!settled && errors.length >= candidates.length){
             settled = true;
             reject(new Error(errors.join(' / ')));
           }
@@ -522,10 +525,32 @@
     });
   }
 
+  // First call for a given source (or after its preferred transport starts failing) races
+  // direct + all proxies to find what works. Once a transport is known-good, later polls
+  // reuse just that one request instead of hammering every proxy every 8 seconds — much
+  // gentler on the free proxy services while still fast.
+  function fetchJsonResilient(url, prefKey){
+    var all = transportList(url);
+    var preferredLabel = prefKey ? state.preferredTransport[prefKey] : null;
+    var preferred = preferredLabel ? all.filter(function(t){ return t.label === preferredLabel; })[0] : null;
+
+    if (preferred){
+      return fetchJsonTimeout(preferred.url, preferred.timeout).catch(function(){
+        // preferred transport failed this time — fall back to a full race and re-learn
+        return raceTransports(all, function(winner){
+          if (prefKey) state.preferredTransport[prefKey] = winner;
+        });
+      });
+    }
+    return raceTransports(all, function(winner){
+      if (prefKey) state.preferredTransport[prefKey] = winner;
+    });
+  }
+
   function fetchFromAdsbLol(lat, lon, rangeKm){
     var radiusNm = Math.min(rangeKm / 1.852, 250);
     var url = 'https://api.adsb.lol/v2/point/' + lat + '/' + lon + '/' + radiusNm.toFixed(1);
-    return fetchJsonResilient(url).then(function(data){
+    return fetchJsonResilient(url, 'adsblol').then(function(data){
       var raw = (data && data.ac) ? data.ac : [];
       var list = [];
       for (var i = 0; i < raw.length; i++){
@@ -558,7 +583,7 @@
     var bb = boundingBox(lat, lon, rangeKm);
     var url = 'https://opensky-network.org/api/states/all?lamin=' + bb.lamin +
               '&lomin=' + bb.lomin + '&lamax=' + bb.lamax + '&lomax=' + bb.lomax;
-    return fetchJsonResilient(url).then(function(data){
+    return fetchJsonResilient(url, 'opensky').then(function(data){
       var raw = data && data.states ? data.states : [];
       var list = [];
       for (var i = 0; i < raw.length; i++){
@@ -585,6 +610,10 @@
     });
   }
 
+  // adsb.lol is built for frequent polling and is tried immediately. OpenSky has a much
+  // stricter anonymous quota, so it's only woken up if adsb.lol hasn't answered within
+  // a short grace window — keeping steady-state polling cheap while still having a fast
+  // fallback when adsb.lol is genuinely down.
   function fetchAircraft(){
     if (state.userLat === null || state.fetching) return;
     state.fetching = true;
@@ -592,28 +621,46 @@
     els.emptyState.style.display = 'none';
 
     var lat = state.userLat, lon = state.userLon, rangeKm = state.rangeKm;
-
-    // Race both data sources at once — whichever answers first wins, instead of
-    // waiting for adsb.lol to fully fail before even starting the OpenSky request.
     var settled = false;
     var errors = [];
-    var sources = [
-      { p: fetchFromAdsbLol(lat, lon, rangeKm), label: 'adsb.lol' },
-      { p: fetchFromOpenSky(lat, lon, rangeKm), label: 'OpenSky' }
-    ];
-    sources.forEach(function(src){
-      src.p.then(function(list){
+    var expected = 1;
+    var openSkyStarted = false;
+    var graceTimer = null;
+
+    function finishIfDone(){
+      if (!settled && errors.length >= expected){
+        setStatus('Kunde inte hämta flygdata från någon källa (' + errors.join(' · ') + '). Försöker igen…', 'err');
+        state.fetching = false;
+        els.loadingState.style.display = 'none';
+      }
+    }
+
+    function startOpenSky(){
+      if (openSkyStarted || settled) return;
+      openSkyStarted = true;
+      expected = 2;
+      fetchFromOpenSky(lat, lon, rangeKm).then(function(list){
         if (settled) return;
         settled = true;
-        applyAircraftResult(list, src.label);
+        applyAircraftResult(list, 'OpenSky');
       }).catch(function(err){
-        errors.push(src.label + ': ' + err.message);
-        if (!settled && errors.length >= sources.length){
-          setStatus('Kunde inte hämta flygdata från någon källa (' + errors.join(' · ') + '). Försöker igen…', 'err');
-          state.fetching = false;
-          els.loadingState.style.display = 'none';
-        }
+        errors.push('OpenSky: ' + err.message);
+        finishIfDone();
       });
+    }
+
+    graceTimer = setTimeout(startOpenSky, 2500);
+
+    fetchFromAdsbLol(lat, lon, rangeKm).then(function(list){
+      if (settled) return;
+      settled = true;
+      clearTimeout(graceTimer);
+      applyAircraftResult(list, 'adsb.lol');
+    }).catch(function(err){
+      errors.push('adsb.lol: ' + err.message);
+      clearTimeout(graceTimer);
+      startOpenSky();
+      finishIfDone();
     });
   }
 
@@ -628,8 +675,8 @@
     if (state.refreshTimer) clearInterval(state.refreshTimer);
     if (state.countdownTimer) clearInterval(state.countdownTimer);
     fetchAircraft();
-    state.countdownSec = 15;
-    state.refreshTimer = setInterval(fetchAircraft, 15000);
+    state.countdownSec = state.refreshIntervalMs / 1000;
+    state.refreshTimer = setInterval(fetchAircraft, state.refreshIntervalMs);
   }
 
   els.refreshBtn.addEventListener('click', function(){
