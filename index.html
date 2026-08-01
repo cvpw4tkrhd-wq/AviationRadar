@@ -151,6 +151,16 @@
   .detail-item .v{font-size:16px; color:var(--phosphor); font-weight:600;}
   .detail-empty{color:var(--text-faint); font-size:12px; font-style:normal;}
 
+  .route-block{margin-top:16px; padding-top:14px; border-top:1px dashed var(--grid-strong);}
+  .route-airline{font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--text-faint); margin-bottom:8px;}
+  .route-airline strong{color:var(--phosphor); font-size:12px; letter-spacing:.02em; text-transform:none;}
+  .route-path{display:flex; align-items:center; gap:10px;}
+  .route-airport{flex:1; min-width:0;}
+  .route-airport .code{font-size:20px; font-weight:700; color:var(--text); letter-spacing:.02em;}
+  .route-airport .name{font-size:11px; color:var(--text-dim); margin-top:2px; line-height:1.4;}
+  .route-arrow{color:var(--phosphor-dim); font-size:16px; flex-shrink:0;}
+  .route-status{font-size:12px; color:var(--text-faint); margin-top:6px;}
+
   footer{margin-top:26px; text-align:center; font-size:10.5px; color:var(--text-faint); letter-spacing:.03em;}
   footer a{color:var(--text-dim);}
 
@@ -170,7 +180,7 @@
 </style>
 </head>
 <body>
-<div class="version-badge">v1.5</div>
+<div class="version-badge">v1.6</div>
 <div class="wrap">
 
   <header>
@@ -467,17 +477,44 @@
   });
 
   // ---------- fetching ----------
-  function fetchJsonResilient(url){
-    return fetch(url, { cache:'no-store' }).then(function(res){
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      return res.json();
-    }).catch(function(directErr){
-      var proxied = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
-      return fetch(proxied, { cache:'no-store' }).then(function(res){
-        if (!res.ok) throw new Error('proxy HTTP ' + res.status);
+  function fetchJsonTimeout(url, timeoutMs){
+    var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    var timer = controller ? setTimeout(function(){ controller.abort(); }, timeoutMs) : null;
+    return fetch(url, { cache:'no-store', signal: controller ? controller.signal : undefined })
+      .then(function(res){
+        if (timer) clearTimeout(timer);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
         return res.json();
-      }).catch(function(proxyErr){
-        throw new Error(directErr.message + ' (direkt) / ' + proxyErr.message + ' (proxy)');
+      })
+      .catch(function(err){
+        if (timer) clearTimeout(timer);
+        throw err;
+      });
+  }
+
+  // Try the direct request and the CORS-proxy request at the same time — whichever answers
+  // first wins, instead of waiting for the direct one to fail before trying the proxy.
+  function fetchJsonResilient(url){
+    return new Promise(function(resolve, reject){
+      var settled = false;
+      var errors = [];
+      var proxied = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+      var attempts = [
+        { p: fetchJsonTimeout(url, 6000), label: 'direkt' },
+        { p: fetchJsonTimeout(proxied, 7000), label: 'proxy' }
+      ];
+      attempts.forEach(function(a){
+        a.p.then(function(data){
+          if (settled) return;
+          settled = true;
+          resolve(data);
+        }).catch(function(err){
+          errors.push(a.label + ': ' + err.message);
+          if (!settled && errors.length >= attempts.length){
+            settled = true;
+            reject(new Error(errors.join(' / ')));
+          }
+        });
       });
     });
   }
@@ -553,21 +590,28 @@
 
     var lat = state.userLat, lon = state.userLon, rangeKm = state.rangeKm;
 
-    fetchFromAdsbLol(lat, lon, rangeKm)
-      .then(function(list){
-        applyAircraftResult(list, 'adsb.lol');
-      })
-      .catch(function(err1){
-        fetchFromOpenSky(lat, lon, rangeKm)
-          .then(function(list){
-            applyAircraftResult(list, 'OpenSky');
-          })
-          .catch(function(err2){
-            setStatus('Kunde inte hämta flygdata från någon källa (adsb.lol: ' + err1.message + ' · OpenSky: ' + err2.message + '). Försöker igen…', 'err');
-            state.fetching = false;
-            els.loadingState.style.display = 'none';
-          });
+    // Race both data sources at once — whichever answers first wins, instead of
+    // waiting for adsb.lol to fully fail before even starting the OpenSky request.
+    var settled = false;
+    var errors = [];
+    var sources = [
+      { p: fetchFromAdsbLol(lat, lon, rangeKm), label: 'adsb.lol' },
+      { p: fetchFromOpenSky(lat, lon, rangeKm), label: 'OpenSky' }
+    ];
+    sources.forEach(function(src){
+      src.p.then(function(list){
+        if (settled) return;
+        settled = true;
+        applyAircraftResult(list, src.label);
+      }).catch(function(err){
+        errors.push(src.label + ': ' + err.message);
+        if (!settled && errors.length >= sources.length){
+          setStatus('Kunde inte hämta flygdata från någon källa (' + errors.join(' · ') + '). Försöker igen…', 'err');
+          state.fetching = false;
+          els.loadingState.style.display = 'none';
+        }
       });
+    });
   }
 
   function applyAircraftResult(list, sourceName){
@@ -760,10 +804,75 @@
     });
   }
 
+  // ---------- route lookup (airline, origin, destination via adsbdb.com) ----------
+  var routeCache = {}; // callsign -> { status: 'loading'|'ok'|'none'|'error', data, message }
+
+  function fetchRoute(callsign){
+    var key = (callsign || '').trim();
+    if (!key || key === '—') return;
+    var cached = routeCache[key];
+    if (cached && cached.status !== 'error') return; // already loading/loaded
+
+    routeCache[key] = { status:'loading' };
+    fetchJsonTimeout('https://api.adsbdb.com/v0/callsign/' + encodeURIComponent(key), 6000)
+      .then(function(data){
+        var fr = data && data.response && data.response.flightroute;
+        routeCache[key] = fr ? { status:'ok', data: fr } : { status:'none' };
+        if (state.selectedIcao){
+          var ac = state.aircraft.filter(function(a){ return a.icao24 === state.selectedIcao; })[0];
+          if (ac && ac.callsign.trim() === key) renderDetail();
+        }
+      })
+      .catch(function(err){
+        routeCache[key] = { status:'error', message: err.message };
+        if (state.selectedIcao){
+          var ac = state.aircraft.filter(function(a){ return a.icao24 === state.selectedIcao; })[0];
+          if (ac && ac.callsign.trim() === key) renderDetail();
+        }
+      });
+  }
+
+  function routeBlockHtml(callsign){
+    var key = (callsign || '').trim();
+    if (!key || key === '—'){
+      return '<div class="route-block"><p class="route-status">Ingen anropssignal sänds — kan inte slå upp rutt.</p></div>';
+    }
+    var entry = routeCache[key];
+    if (!entry || entry.status === 'loading'){
+      return '<div class="route-block"><p class="route-status">Hämtar ruttinformation…</p></div>';
+    }
+    if (entry.status === 'none'){
+      return '<div class="route-block"><p class="route-status">Ingen ruttinformation hittad för ' + key + ' (okänd i ruttdatabasen — vanligt för privat-, militär- eller charterflyg).</p></div>';
+    }
+    if (entry.status === 'error'){
+      return '<div class="route-block"><p class="route-status">Kunde inte hämta ruttinformation (' + entry.message + ').</p></div>';
+    }
+    var fr = entry.data;
+    var airlineName = (fr.airline && fr.airline.name) ? fr.airline.name : 'Okänt flygbolag';
+    var origin = fr.origin, dest = fr.destination;
+    var html = '<div class="route-block">';
+    html += '<div class="route-airline"><strong>' + airlineName + '</strong>' + ((fr.airline && fr.airline.country) ? ' · ' + fr.airline.country : '') + '</div>';
+    if (origin && dest){
+      html += '<div class="route-path">';
+      html += '<div class="route-airport"><div class="code">' + (origin.iata_code || origin.icao_code || '—') + '</div><div class="name">' + origin.municipality + ', ' + origin.country_name + '</div></div>';
+      html += '<div class="route-arrow">→</div>';
+      html += '<div class="route-airport" style="text-align:right;"><div class="code">' + (dest.iata_code || dest.icao_code || '—') + '</div><div class="name">' + dest.municipality + ', ' + dest.country_name + '</div></div>';
+      html += '</div>';
+    } else {
+      html += '<p class="route-status">Ofullständig ruttdata.</p>';
+    }
+    html += '</div>';
+    return html;
+  }
+
   function selectAircraft(icao){
     state.selectedIcao = (state.selectedIcao === icao) ? null : icao;
     render();
     renderDetail();
+    if (state.selectedIcao){
+      var ac = state.aircraft.filter(function(a){ return a.icao24 === state.selectedIcao; })[0];
+      if (ac) fetchRoute(ac.callsign);
+    }
   }
 
   function renderDetail(){
@@ -789,7 +898,8 @@
         '<div class="detail-item"><div class="k">Riktning från dig</div><div class="v">' + compassPoints[idx] + ' (' + Math.round(ac.bearing) + '°)</div></div>' +
         '<div class="detail-item"><div class="k">Kurs (heading)</div><div class="v">' + (ac.trueTrack!==null? Math.round(ac.trueTrack)+'°':'—') + '</div></div>' +
         '<div class="detail-item"><div class="k">Status</div><div class="v" style="font-size:13px;">' + (ac.onGround ? 'På marken' : 'I luften') + '</div></div>' +
-      '</div>';
+      '</div>' +
+      routeBlockHtml(ac.callsign);
   }
 
   // sortable headers
