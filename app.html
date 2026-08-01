@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>LUFTRUM — Live flygradar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="version-badge">v2.5</div>
+<div class="wrap">
+
+  <header>
+    <div>
+      <p class="eyebrow">Luftbevakning · realtid</p>
+      <h1>LUFT<span>RUM</span></h1>
+      <div class="status-line">
+        <span class="dot" id="statusDot"></span>
+        <span id="statusText">Initierar…</span>
+      </div>
+      <div class="lamp-row" id="lampRow">
+        <div class="lamp-item" id="indPosition"><span class="lamp"></span>Position</div>
+        <div class="lamp-item" id="indApi"><span class="lamp"></span>API</div>
+        <div class="lamp-item" id="indUpdated"><span class="lamp"></span>Uppdaterad <span id="indUpdatedTime">—</span></div>
+      </div>
+    </div>
+    <div class="controls">
+      <select id="rangeSelect" aria-label="Räckvidd">
+        <option value="25">25 km</option>
+        <option value="50" selected>50 km</option>
+        <option value="100">100 km</option>
+        <option value="200">200 km</option>
+        <option value="400">400 km</option>
+      </select>
+      <button id="refreshBtn" type="button">Uppdatera</button>
+      <button id="locBtn" class="ghost" type="button">Position</button>
+      <button id="themeBtn" class="ghost" type="button" aria-label="Byt färgtema">☀ Ljust läge</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="scope-card">
+      <p class="card-title">
+        <span>Radarskärm</span>
+        <span id="rangeLabel">50 KM</span>
+      </p>
+      <div class="scope-wrap" id="scopeWrap">
+        <svg id="scopeSvg" viewBox="0 0 460 460"></svg>
+      </div>
+      <p class="scope-footnote" id="scopeFootnote">Väntar på position…</p>
+
+      <div class="map-wrap" id="mapWrap">
+        <div id="miniMap"></div>
+        <div class="map-veil"></div>
+      </div>
+
+      <div class="manual open" id="manualPanel">
+        <p style="width:100%; font-size:10.5px; color:var(--text-faint); margin:0 0 2px;">Automatisk positionering opålitlig hos dig? Ange koordinater direkt (t.ex. från Google Maps: håll fingret på din plats):</p>
+        <div class="manual-field">
+          <label for="latInput">Latitud</label>
+          <input id="latInput" type="text" placeholder="59.3293">
+        </div>
+        <div class="manual-field">
+          <label for="lonInput">Longitud</label>
+          <input id="lonInput" type="text" placeholder="18.0686">
+        </div>
+        <div class="manual-field" style="justify-content:flex-end; display:flex;">
+          <button id="manualSetBtn" type="button">Använd koordinater</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="list-card">
+      <p class="card-title">
+        <span>Flygplan inom räckvidd</span>
+        <span id="countLabel">0</span>
+      </p>
+      <div class="list-scroll">
+        <table id="acTable" aria-live="polite">
+          <thead>
+            <tr>
+              <th data-key="callsign">Anrop</th>
+              <th data-key="alt">Höjd</th>
+              <th data-key="spd">Fart</th>
+              <th data-key="dist">Avstånd</th>
+              <th data-key="hdg">Riktn.</th>
+              <th data-key="country">Info</th>
+            </tr>
+          </thead>
+          <tbody id="acTableBody"></tbody>
+        </table>
+        <div class="empty" id="emptyState" style="display:none;">Inga flygplan inom räckvidd just nu.</div>
+        <div class="loading" id="loadingState">Hämtar flygdata</div>
+      </div>
+
+      <div class="detail" id="detailPanel">
+        <p class="card-title" style="margin-bottom:0;" id="detailTitle">Vald flygning</p>
+        <div id="detailContent">
+          <p class="detail-empty" style="margin-top:10px;">Klicka på ett flygplan i listan eller på radarn för detaljer.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Flygdata från <a href="https://opensky-network.org" target="_blank" rel="noopener">OpenSky Network</a> (öppen, anonym åtkomst — ca 5–15 s fördröjning).
+    Positioner beräknas lokalt i din webbläsare och skickas aldrig vidare.
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
