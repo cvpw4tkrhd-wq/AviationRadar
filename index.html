@@ -180,7 +180,7 @@
 </style>
 </head>
 <body>
-<div class="version-badge">v1.6</div>
+<div class="version-badge">v1.7</div>
 <div class="wrap">
 
   <header>
@@ -492,16 +492,19 @@
       });
   }
 
-  // Try the direct request and the CORS-proxy request at the same time — whichever answers
-  // first wins, instead of waiting for the direct one to fail before trying the proxy.
+  // Try the direct request and three independent CORS proxies at the same time —
+  // whichever answers first wins. This avoids depending on any single (often flaky)
+  // free proxy service, and avoids waiting for a slow one before trying the next.
   function fetchJsonResilient(url){
     return new Promise(function(resolve, reject){
       var settled = false;
       var errors = [];
-      var proxied = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+      var encoded = encodeURIComponent(url);
       var attempts = [
-        { p: fetchJsonTimeout(url, 6000), label: 'direkt' },
-        { p: fetchJsonTimeout(proxied, 7000), label: 'proxy' }
+        { p: fetchJsonTimeout(url, 5000), label: 'direkt' },
+        { p: fetchJsonTimeout('https://api.codetabs.com/v1/proxy?quest=' + encoded, 8000), label: 'codetabs-proxy' },
+        { p: fetchJsonTimeout('https://api.allorigins.win/raw?url=' + encoded, 8000), label: 'allorigins-proxy' },
+        { p: fetchJsonTimeout('https://corsproxy.io/?url=' + encoded, 8000), label: 'corsproxy.io' }
       ];
       attempts.forEach(function(a){
         a.p.then(function(data){
@@ -814,7 +817,7 @@
     if (cached && cached.status !== 'error') return; // already loading/loaded
 
     routeCache[key] = { status:'loading' };
-    fetchJsonTimeout('https://api.adsbdb.com/v0/callsign/' + encodeURIComponent(key), 6000)
+    fetchJsonResilient('https://api.adsbdb.com/v0/callsign/' + encodeURIComponent(key))
       .then(function(data){
         var fr = data && data.response && data.response.flightroute;
         routeCache[key] = fr ? { status:'ok', data: fr } : { status:'none' };
