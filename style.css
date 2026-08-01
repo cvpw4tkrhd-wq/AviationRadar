@@ -124,6 +124,19 @@
 
   .scope-footnote{font-size:10.5px; color:var(--text-faint); text-align:center; margin-top:10px; letter-spacing:.02em;}
 
+  /* Mini-map: deliberately muted so it reads as context, not competition for the radar */
+  .map-wrap{position:relative; margin-top:12px; border-radius:10px; overflow:hidden; border:1px solid var(--grid-strong); height:150px;}
+  #miniMap{width:100%; height:100%; background:var(--panel-raised);
+    filter:grayscale(45%) contrast(0.82) brightness(1.12) opacity(0.8);}
+  .map-veil{position:absolute; inset:0; background:var(--bg); opacity:0.16; pointer-events:none;}
+  .map-wrap .leaflet-control-zoom{border:none !important; box-shadow:none !important; opacity:0.55; transition:opacity .15s;}
+  .map-wrap .leaflet-control-zoom:hover{opacity:0.95;}
+  .map-wrap .leaflet-control-zoom a{background:var(--panel-raised) !important; color:var(--text-dim) !important; border-color:var(--grid-strong) !important;}
+  .map-wrap .leaflet-control-attribution{background:rgba(0,0,0,0.35) !important; color:var(--text-faint) !important; font-size:8.5px !important; padding:1px 4px !important;}
+  .map-wrap .leaflet-control-attribution a{color:var(--text-dim) !important;}
+  .user-marker-dot{width:100%; height:100%; background:var(--amber); border:2px solid var(--bg); border-radius:50%; box-shadow:0 0 6px var(--amber);}
+  .user-marker-icon{background:transparent !important; border:none !important;}
+
   .empty, .loading{padding:30px 10px; text-align:center; color:var(--text-dim); font-size:13px; line-height:1.6;}
   .loading::after{content:'▮'; animation:blink 1s steps(2) infinite; margin-left:4px;}
   @keyframes blink{ 50%{ opacity:0;} }

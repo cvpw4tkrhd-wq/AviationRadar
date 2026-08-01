@@ -81,6 +81,7 @@
     var next = isLight ? 'dark' : 'light';
     applyTheme(next);
     safeSetStored(THEME_KEY, next);
+    updateMapTheme();
   });
 
   // ---------- geo helpers ----------
@@ -129,6 +130,61 @@
     var lamp = el.querySelector('.lamp');
     if (!lamp) return;
     lamp.className = 'lamp' + (lampState && lampState !== 'off' ? ' ' + lampState : '');
+  }
+
+  // ---------- mini-map (pale/muted context map beneath the radar) ----------
+  var map = null, userMarker = null, rangeCircle = null;
+
+  function getCssVar(name){
+    return getComputedStyle(document.body).getPropertyValue(name).trim();
+  }
+
+  function initMap(lat, lon){
+    if (typeof L === 'undefined' || map) return;
+    map = L.map('miniMap', {
+      zoomControl: true,
+      attributionControl: true,
+      scrollWheelZoom: false
+    }).setView([lat, lon], 10);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap &copy; CARTO',
+      subdomains: 'abcd',
+      maxZoom: 19
+    }).addTo(map);
+
+    var icon = L.divIcon({
+      className: 'user-marker-icon',
+      html: '<div class="user-marker-dot"></div>',
+      iconSize: [14, 14],
+      iconAnchor: [7, 7]
+    });
+    userMarker = L.marker([lat, lon], { icon: icon }).addTo(map);
+
+    rangeCircle = L.circle([lat, lon], {
+      radius: state.rangeKm * 1000,
+      color: getCssVar('--amber'),
+      weight: 1,
+      fillOpacity: 0.05
+    }).addTo(map);
+
+    setTimeout(function(){ if (map) map.invalidateSize(); }, 150);
+  }
+
+  function updateMapPosition(lat, lon){
+    if (typeof L === 'undefined') return;
+    if (!map){ initMap(lat, lon); return; }
+    map.setView([lat, lon], map.getZoom());
+    if (userMarker) userMarker.setLatLng([lat, lon]);
+    if (rangeCircle) rangeCircle.setLatLng([lat, lon]).setRadius(state.rangeKm * 1000);
+  }
+
+  function updateMapRange(){
+    if (rangeCircle) rangeCircle.setRadius(state.rangeKm * 1000);
+  }
+
+  function updateMapTheme(){
+    if (rangeCircle) rangeCircle.setStyle({ color: getCssVar('--amber') });
   }
 
   // ---------- location (browser API + 3 IP services raced, fastest wins) ----------
@@ -194,6 +250,7 @@
         state.userLon = result.lon;
         setLamp('indPosition', 'ok');
         setStatus('Position via ' + result.source + ' — hämtar flygdata…', '');
+        updateMapPosition(result.lat, result.lon);
         startTracking();
       }).catch(function(err){
         errors.push(err.message);
@@ -223,6 +280,7 @@
     state.userLon = lon;
     setLamp('indPosition', 'ok');
     setStatus('Manuell position satt — hämtar flygdata…', '');
+    updateMapPosition(lat, lon);
     startTracking();
   });
 
@@ -485,6 +543,7 @@
     els.rangeLabel.textContent = state.rangeKm + ' KM';
     safeSetStored(RANGE_KEY, String(state.rangeKm));
     buildStaticScope();
+    updateMapRange();
     if (state.userLat !== null) fetchAircraft();
     else renderBlips();
   });

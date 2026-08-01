@@ -6,10 +6,11 @@
 <title>LUFTRUM — Live flygradar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="version-badge">v2.4</div>
+<div class="version-badge">v2.5</div>
 <div class="wrap">
 
   <header>
@@ -50,6 +51,11 @@
         <svg id="scopeSvg" viewBox="0 0 460 460"></svg>
       </div>
       <p class="scope-footnote" id="scopeFootnote">Väntar på position…</p>
+
+      <div class="map-wrap" id="mapWrap">
+        <div id="miniMap"></div>
+        <div class="map-veil"></div>
+      </div>
 
       <div class="manual open" id="manualPanel">
         <p style="width:100%; font-size:10.5px; color:var(--text-faint); margin:0 0 2px;">Automatisk positionering opålitlig hos dig? Ange koordinater direkt (t.ex. från Google Maps: håll fingret på din plats):</p>
@@ -105,6 +111,7 @@
   </footer>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
