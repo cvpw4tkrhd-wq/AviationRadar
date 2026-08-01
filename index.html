@@ -170,7 +170,7 @@
 </style>
 </head>
 <body>
-<div class="version-badge">v1.4</div>
+<div class="version-badge">v1.5</div>
 <div class="wrap">
 
   <header>
@@ -467,13 +467,25 @@
   });
 
   // ---------- fetching ----------
+  function fetchJsonResilient(url){
+    return fetch(url, { cache:'no-store' }).then(function(res){
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    }).catch(function(directErr){
+      var proxied = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+      return fetch(proxied, { cache:'no-store' }).then(function(res){
+        if (!res.ok) throw new Error('proxy HTTP ' + res.status);
+        return res.json();
+      }).catch(function(proxyErr){
+        throw new Error(directErr.message + ' (direkt) / ' + proxyErr.message + ' (proxy)');
+      });
+    });
+  }
+
   function fetchFromAdsbLol(lat, lon, rangeKm){
     var radiusNm = Math.min(rangeKm / 1.852, 250);
     var url = 'https://api.adsb.lol/v2/point/' + lat + '/' + lon + '/' + radiusNm.toFixed(1);
-    return fetch(url, { cache:'no-store' }).then(function(res){
-      if (!res.ok) throw new Error('adsb.lol HTTP ' + res.status);
-      return res.json();
-    }).then(function(data){
+    return fetchJsonResilient(url).then(function(data){
       var raw = (data && data.ac) ? data.ac : [];
       var list = [];
       for (var i = 0; i < raw.length; i++){
@@ -506,10 +518,7 @@
     var bb = boundingBox(lat, lon, rangeKm);
     var url = 'https://opensky-network.org/api/states/all?lamin=' + bb.lamin +
               '&lomin=' + bb.lomin + '&lamax=' + bb.lamax + '&lomax=' + bb.lomax;
-    return fetch(url, { cache:'no-store' }).then(function(res){
-      if (!res.ok) throw new Error('OpenSky HTTP ' + res.status);
-      return res.json();
-    }).then(function(data){
+    return fetchJsonResilient(url).then(function(data){
       var raw = data && data.states ? data.states : [];
       var list = [];
       for (var i = 0; i < raw.length; i++){
