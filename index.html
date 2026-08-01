@@ -21,14 +21,43 @@
     --text: #d9ffe9;
     --text-dim: #6fae8c;
     --text-faint: #3d5f4c;
+    --scope-bg0: #0c1712;
+    --scope-bg1: #060b08;
+    --scope-bg2: #040705;
     --mono: 'JetBrains Mono', monospace;
     --display: 'Space Grotesk', sans-serif;
+  }
+
+  /* Light theme: daytime VFR sectional-chart palette — paper, ink-green, chart-orange */
+  body[data-theme="light"]{
+    --bg: #f3efe0;
+    --panel: #faf7ec;
+    --panel-raised: #efe7cd;
+    --grid: #ddd0a3;
+    --grid-strong: #bda868;
+    --phosphor: #1f6f46;
+    --phosphor-soft: rgba(31,111,70,0.16);
+    --phosphor-dim: #4c8f68;
+    --amber: #c1650a;
+    --danger: #a8362b;
+    --text: #2b2a1f;
+    --text-dim: #6b6350;
+    --text-faint: #a89c78;
+    --scope-bg0: #faf5e4;
+    --scope-bg1: #f1e8cc;
+    --scope-bg2: #e6d9ab;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0; padding:0; background:var(--bg); color:var(--text); font-family:var(--mono); min-height:100vh;}
   body{
     background:
-      radial-gradient(ellipse at 50% -10%, rgba(77,255,160,0.06), transparent 60%),
+      radial-gradient(ellipse at 50% -10%, var(--phosphor-soft), transparent 60%),
+      var(--bg);
+    transition: background-color .25s ease;
+  }
+  body[data-theme="light"]{
+    background:
+      radial-gradient(ellipse at 50% -10%, rgba(31,111,70,0.05), transparent 60%),
       var(--bg);
   }
   .wrap{max-width:1180px; margin:0 auto; padding:20px 16px 60px;}
@@ -62,19 +91,34 @@
   .card-title{font-family:var(--mono); font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--text-dim); margin:0 0 12px; display:flex; justify-content:space-between; align-items:center;}
 
   .scope-wrap{position:relative; width:100%; aspect-ratio:1/1; border-radius:14px; overflow:hidden;
-    background:radial-gradient(circle at 50% 50%, #0c1712 0%, #060b08 78%, #040705 100%);
-    box-shadow: inset 0 0 40px rgba(0,0,0,0.6), inset 0 0 2px var(--grid-strong);}
+    background:radial-gradient(circle at 50% 50%, var(--scope-bg0) 0%, var(--scope-bg1) 78%, var(--scope-bg2) 100%);
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.35), inset 0 0 2px var(--grid-strong);}
   .scope-wrap svg{width:100%; height:100%; display:block;}
 
   .sweep{transform-origin:50% 50%; animation:spin 4.5s linear infinite;}
   @keyframes spin{ to{ transform:rotate(360deg);} }
 
-  .blip circle.core{filter:drop-shadow(0 0 4px var(--phosphor));}
-  .blip.selected circle.core{fill:var(--amber); filter:drop-shadow(0 0 6px var(--amber));}
+  .blip .blip-core{filter:drop-shadow(0 0 4px var(--phosphor));}
+  .blip.selected .blip-core{filter:drop-shadow(0 0 6px var(--amber));}
   .blip .ping{animation:ping 1.8s ease-out; transform-origin:center;}
   @keyframes ping{ from{ r:1; opacity:.9;} to{ r:22; opacity:0;} }
 
   .center-mark{filter:drop-shadow(0 0 5px var(--phosphor));}
+
+  .radar-ring{ stroke:var(--grid); fill:none; }
+  .radar-cross{ stroke:var(--grid); }
+  .ring-label{ fill:var(--text-faint); }
+  .compass-label{ fill:var(--phosphor); }
+  .center-dot{ fill:var(--phosphor); }
+  .center-ring{ stroke:var(--phosphor); fill:none; }
+  .sweep-stop-a{ stop-color:var(--phosphor); stop-opacity:0; }
+  .sweep-stop-b{ stop-color:var(--phosphor); stop-opacity:0.28; }
+  .blip-heading{ stroke:var(--phosphor); }
+  .blip.selected .blip-heading{ stroke:var(--amber); }
+  .blip-core{ fill:var(--phosphor); }
+  .blip.selected .blip-core{ fill:var(--amber); }
+  .blip-label{ fill:var(--text-dim); }
+  .blip.selected .blip-label{ fill:var(--amber); }
 
   .scope-footnote{font-size:10.5px; color:var(--text-faint); text-align:center; margin-top:10px; letter-spacing:.02em;}
 
@@ -148,6 +192,7 @@
       </select>
       <button id="refreshBtn" type="button">Uppdatera</button>
       <button id="locBtn" class="ghost" type="button">Position</button>
+      <button id="themeBtn" class="ghost" type="button" aria-label="Byt färgtema">☀ Ljust läge</button>
     </div>
   </header>
 
@@ -192,7 +237,7 @@
               <th data-key="spd">Fart</th>
               <th data-key="dist">Avstånd</th>
               <th data-key="hdg">Riktn.</th>
-              <th data-key="country">Ursprung</th>
+              <th data-key="country">Info</th>
             </tr>
           </thead>
           <tbody id="acTableBody"></tbody>
@@ -252,8 +297,21 @@
     emptyState: document.getElementById('emptyState'),
     loadingState: document.getElementById('loadingState'),
     detailContent: document.getElementById('detailContent'),
-    acTable: document.getElementById('acTable')
+    acTable: document.getElementById('acTable'),
+    themeBtn: document.getElementById('themeBtn')
   };
+
+  // ---------- theme ----------
+  els.themeBtn.addEventListener('click', function(){
+    var isLight = document.body.getAttribute('data-theme') === 'light';
+    if (isLight){
+      document.body.removeAttribute('data-theme');
+      els.themeBtn.textContent = '☀ Ljust läge';
+    } else {
+      document.body.setAttribute('data-theme', 'light');
+      els.themeBtn.textContent = '● Mörkt läge';
+    }
+  });
 
   // ---------- geo helpers ----------
   function toRad(d){ return d * Math.PI / 180; }
@@ -392,54 +450,105 @@
   });
 
   // ---------- fetching ----------
+  function fetchFromAdsbLol(lat, lon, rangeKm){
+    var radiusNm = Math.min(rangeKm / 1.852, 250);
+    var url = 'https://api.adsb.lol/v2/point/' + lat + '/' + lon + '/' + radiusNm.toFixed(1);
+    return fetch(url, { cache:'no-store' }).then(function(res){
+      if (!res.ok) throw new Error('adsb.lol HTTP ' + res.status);
+      return res.json();
+    }).then(function(data){
+      var raw = (data && data.ac) ? data.ac : [];
+      var list = [];
+      for (var i = 0; i < raw.length; i++){
+        var s = raw[i];
+        if (typeof s.lat !== 'number' || typeof s.lon !== 'number') continue;
+        var dist = haversineKm(lat, lon, s.lat, s.lon);
+        if (dist > rangeKm) continue;
+        var onGround = (s.alt_baro === 'ground');
+        var altM = (!onGround && typeof s.alt_baro === 'number') ? s.alt_baro * 0.3048 : (onGround ? 0 : null);
+        var velMs = (typeof s.gs === 'number') ? s.gs * 0.514444 : null;
+        list.push({
+          icao24: s.hex || (s.flight || String(i)),
+          callsign: (s.flight || '').trim() || '—',
+          country: s.t || s.r || '—',
+          lon: s.lon, lat: s.lat,
+          baroAlt: altM,
+          onGround: onGround,
+          velocity: velMs,
+          trueTrack: (typeof s.track === 'number') ? s.track : null,
+          geoAlt: null,
+          dist: dist,
+          bearing: bearingDeg(lat, lon, s.lat, s.lon)
+        });
+      }
+      return list;
+    });
+  }
+
+  function fetchFromOpenSky(lat, lon, rangeKm){
+    var bb = boundingBox(lat, lon, rangeKm);
+    var url = 'https://opensky-network.org/api/states/all?lamin=' + bb.lamin +
+              '&lomin=' + bb.lomin + '&lamax=' + bb.lamax + '&lomax=' + bb.lomax;
+    return fetch(url, { cache:'no-store' }).then(function(res){
+      if (!res.ok) throw new Error('OpenSky HTTP ' + res.status);
+      return res.json();
+    }).then(function(data){
+      var raw = data && data.states ? data.states : [];
+      var list = [];
+      for (var i = 0; i < raw.length; i++){
+        var s = raw[i];
+        var lon2 = s[5], lat2 = s[6];
+        if (lat2 === null || lon2 === null) continue;
+        var dist = haversineKm(lat, lon, lat2, lon2);
+        if (dist > rangeKm) continue;
+        list.push({
+          icao24: s[0],
+          callsign: (s[1] || '').trim() || '—',
+          country: s[2] || '—',
+          lon: lon2, lat: lat2,
+          baroAlt: s[7],
+          onGround: s[8],
+          velocity: s[9],
+          trueTrack: s[10],
+          geoAlt: s[13],
+          dist: dist,
+          bearing: bearingDeg(lat, lon, lat2, lon2)
+        });
+      }
+      return list;
+    });
+  }
+
   function fetchAircraft(){
     if (state.userLat === null || state.fetching) return;
     state.fetching = true;
     els.loadingState.style.display = 'block';
     els.emptyState.style.display = 'none';
 
-    var bb = boundingBox(state.userLat, state.userLon, state.rangeKm);
-    var url = 'https://opensky-network.org/api/states/all?lamin=' + bb.lamin +
-              '&lomin=' + bb.lomin + '&lamax=' + bb.lamax + '&lomax=' + bb.lomax;
+    var lat = state.userLat, lon = state.userLon, rangeKm = state.rangeKm;
 
-    fetch(url)
-      .then(function(res){
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        return res.json();
+    fetchFromAdsbLol(lat, lon, rangeKm)
+      .then(function(list){
+        applyAircraftResult(list, 'adsb.lol');
       })
-      .then(function(data){
-        var raw = data && data.states ? data.states : [];
-        var list = [];
-        for (var i = 0; i < raw.length; i++){
-          var s = raw[i];
-          var lon = s[5], lat = s[6];
-          if (lat === null || lon === null) continue;
-          var dist = haversineKm(state.userLat, state.userLon, lat, lon);
-          if (dist > state.rangeKm) continue;
-          list.push({
-            icao24: s[0],
-            callsign: (s[1] || '').trim() || '—',
-            country: s[2] || '—',
-            lon: lon, lat: lat,
-            baroAlt: s[7],
-            onGround: s[8],
-            velocity: s[9],
-            trueTrack: s[10],
-            geoAlt: s[13],
-            dist: dist,
-            bearing: bearingDeg(state.userLat, state.userLon, lat, lon)
+      .catch(function(err1){
+        fetchFromOpenSky(lat, lon, rangeKm)
+          .then(function(list){
+            applyAircraftResult(list, 'OpenSky');
+          })
+          .catch(function(err2){
+            setStatus('Kunde inte hämta flygdata från någon källa (adsb.lol: ' + err1.message + ' · OpenSky: ' + err2.message + '). Försöker igen…', 'err');
+            state.fetching = false;
+            els.loadingState.style.display = 'none';
           });
-        }
-        state.aircraft = list;
-        setStatus('Live — ' + list.length + ' flygplan inom ' + state.rangeKm + ' km', 'live');
-        render();
-        state.fetching = false;
-      })
-      .catch(function(err){
-        setStatus('Kunde inte hämta flygdata (' + err.message + '). Försöker igen…', 'err');
-        state.fetching = false;
-        els.loadingState.style.display = 'none';
       });
+  }
+
+  function applyAircraftResult(list, sourceName){
+    state.aircraft = list;
+    setStatus('Live (' + sourceName + ') — ' + list.length + ' flygplan inom ' + state.rangeKm + ' km', 'live');
+    render();
+    state.fetching = false;
   }
 
   function startTracking(){
@@ -480,21 +589,21 @@
     var rings = 4;
     for (var i = 1; i <= rings; i++){
       var r = (maxR / rings) * i;
-      svg.appendChild(svgEl('circle', {cx:cx, cy:cy, r:r, fill:'none', stroke:'#123322', 'stroke-width':1}));
+      svg.appendChild(svgEl('circle', {class:'radar-ring', cx:cx, cy:cy, r:r, 'stroke-width':1}));
       var kmVal = Math.round(state.rangeKm * (i/rings));
-      var label = svgEl('text', {x:cx+4, y:cy-r+12, fill:'#3d5f4c', 'font-size':9, 'font-family':'JetBrains Mono, monospace'});
+      var label = svgEl('text', {class:'ring-label', x:cx+4, y:cy-r+12, 'font-size':9, 'font-family':'JetBrains Mono, monospace'});
       label.textContent = kmVal + 'km';
       svg.appendChild(label);
     }
 
     // cross lines
-    svg.appendChild(svgEl('line', {x1:cx, y1:cy-maxR, x2:cx, y2:cy+maxR, stroke:'#123322', 'stroke-width':1}));
-    svg.appendChild(svgEl('line', {x1:cx-maxR, y1:cy, x2:cx+maxR, y2:cy, stroke:'#123322', 'stroke-width':1}));
+    svg.appendChild(svgEl('line', {class:'radar-cross', x1:cx, y1:cy-maxR, x2:cx, y2:cy+maxR, 'stroke-width':1}));
+    svg.appendChild(svgEl('line', {class:'radar-cross', x1:cx-maxR, y1:cy, x2:cx+maxR, y2:cy, 'stroke-width':1}));
 
     // compass labels
     var compass = [['N',cx,cy-maxR-10],['S',cx,cy+maxR+16],['V',cx-maxR-14,cy+4],['Ö',cx+maxR+8,cy+4]];
     compass.forEach(function(c){
-      var t = svgEl('text', {x:c[1], y:c[2], fill:'#4dffa0', 'font-size':12, 'font-family':'JetBrains Mono, monospace', 'text-anchor':'middle', 'font-weight':'600'});
+      var t = svgEl('text', {class:'compass-label', x:c[1], y:c[2], 'font-size':12, 'font-family':'JetBrains Mono, monospace', 'text-anchor':'middle', 'font-weight':'600'});
       t.textContent = c[0];
       svg.appendChild(t);
     });
@@ -503,8 +612,8 @@
     var sweepGroup = svgEl('g', {class:'sweep', id:'sweepGroup'});
     var sweepGrad = svgEl('defs', {});
     var grad = svgEl('linearGradient', {id:'sweepGrad', x1:'0', y1:'0', x2:'1', y2:'0'});
-    grad.appendChild(svgEl('stop', {offset:'0%', 'stop-color':'#4dffa0', 'stop-opacity':'0'}));
-    grad.appendChild(svgEl('stop', {offset:'100%', 'stop-color':'#4dffa0', 'stop-opacity':'0.28'}));
+    grad.appendChild(svgEl('stop', {class:'sweep-stop-a', offset:'0%'}));
+    grad.appendChild(svgEl('stop', {class:'sweep-stop-b', offset:'100%'}));
     sweepGrad.appendChild(grad);
     svg.appendChild(sweepGrad);
     var sweepPath = svgEl('path', {
@@ -516,8 +625,8 @@
 
     // center marker (user)
     var centerGroup = svgEl('g', {class:'center-mark'});
-    centerGroup.appendChild(svgEl('circle', {cx:cx, cy:cy, r:4, fill:'#4dffa0'}));
-    centerGroup.appendChild(svgEl('circle', {cx:cx, cy:cy, r:9, fill:'none', stroke:'#4dffa0', 'stroke-width':1, opacity:0.5}));
+    centerGroup.appendChild(svgEl('circle', {class:'center-dot', cx:cx, cy:cy, r:4}));
+    centerGroup.appendChild(svgEl('circle', {class:'center-ring', cx:cx, cy:cy, r:9, 'stroke-width':1, opacity:0.5}));
     svg.appendChild(centerGroup);
 
     // group for blips (populated on each render)
@@ -554,14 +663,14 @@
         var hr = toRad(ac.trueTrack);
         var hx = x + 9 * Math.sin(hr);
         var hy = y - 9 * Math.cos(hr);
-        g.appendChild(svgEl('line', {x1:x, y1:y, x2:hx, y2:hy, stroke: isSelected ? '#ffb020' : '#4dffa0', 'stroke-width':1.4, opacity:0.85}));
+        g.appendChild(svgEl('line', {class:'blip-heading', x1:x, y1:y, x2:hx, y2:hy, 'stroke-width':1.4, opacity:0.85}));
       }
 
-      var core = svgEl('circle', {class:'core', cx:x, cy:y, r:3.2, fill: isSelected ? '#ffb020' : '#4dffa0'});
+      var core = svgEl('circle', {class:'blip-core', cx:x, cy:y, r:3.2});
       g.appendChild(core);
 
       if (ac.callsign && ac.callsign !== '—'){
-        var label = svgEl('text', {x:x+6, y:y-6, 'font-size':8.5, fill: isSelected ? '#ffb020' : '#8fd9b4', 'font-family':'JetBrains Mono, monospace'});
+        var label = svgEl('text', {class:'blip-label', x:x+6, y:y-6, 'font-size':8.5, 'font-family':'JetBrains Mono, monospace'});
         label.textContent = ac.callsign;
         g.appendChild(label);
       }
@@ -647,7 +756,7 @@
     els.detailContent.innerHTML =
       '<div class="detail-grid">' +
         '<div class="detail-item"><div class="k">Anropssignal</div><div class="v">' + ac.callsign + '</div></div>' +
-        '<div class="detail-item"><div class="k">Ursprungsland</div><div class="v" style="font-size:13px;">' + ac.country + '</div></div>' +
+        '<div class="detail-item"><div class="k">Typ / info</div><div class="v" style="font-size:13px;">' + ac.country + '</div></div>' +
         '<div class="detail-item"><div class="k">Höjd (baro)</div><div class="v">' + (ac.baroAlt!==null? Math.round(ac.baroAlt)+' m':'—') + '</div></div>' +
         '<div class="detail-item"><div class="k">Fart</div><div class="v">' + (ac.velocity!==null? Math.round(ac.velocity*3.6)+' km/h':'—') + '</div></div>' +
         '<div class="detail-item"><div class="k">Avstånd</div><div class="v">' + ac.dist.toFixed(1) + ' km</div></div>' +
