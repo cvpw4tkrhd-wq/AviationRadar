@@ -170,7 +170,7 @@
 </style>
 </head>
 <body>
-<div class="version-badge">v1.2</div>
+<div class="version-badge">v1.4</div>
 <div class="wrap">
 
   <header>
@@ -302,15 +302,32 @@
   };
 
   // ---------- theme ----------
-  els.themeBtn.addEventListener('click', function(){
-    var isLight = document.body.getAttribute('data-theme') === 'light';
-    if (isLight){
-      document.body.removeAttribute('data-theme');
-      els.themeBtn.textContent = '☀ Ljust läge';
-    } else {
+  var THEME_KEY = 'luftrum-theme';
+
+  function safeGetStoredTheme(){
+    try { return localStorage.getItem(THEME_KEY); } catch(e){ return null; }
+  }
+  function safeSetStoredTheme(val){
+    try { localStorage.setItem(THEME_KEY, val); } catch(e){ /* storage unavailable, ignore */ }
+  }
+
+  function applyTheme(theme){
+    if (theme === 'light'){
       document.body.setAttribute('data-theme', 'light');
       els.themeBtn.textContent = '● Mörkt läge';
+    } else {
+      document.body.removeAttribute('data-theme');
+      els.themeBtn.textContent = '☀ Ljust läge';
     }
+  }
+
+  applyTheme(safeGetStoredTheme());
+
+  els.themeBtn.addEventListener('click', function(){
+    var isLight = document.body.getAttribute('data-theme') === 'light';
+    var next = isLight ? 'dark' : 'light';
+    applyTheme(next);
+    safeSetStoredTheme(next);
   });
 
   // ---------- geo helpers ----------
