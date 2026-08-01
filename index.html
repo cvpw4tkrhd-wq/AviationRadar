@@ -182,7 +182,7 @@
 </style>
 </head>
 <body>
-<div class="version-badge">v1.9</div>
+<div class="version-badge">v2.0</div>
 <div class="wrap">
 
   <header>
@@ -290,7 +290,7 @@
     countdownSec: 15,
     fetching: false,
     preferredTransport: {},
-    refreshIntervalMs: 8000,
+    refreshIntervalMs: 5000,
     showingLocationInfo: false
   };
 
@@ -510,12 +510,14 @@
   }
 
   function transportList(url){
+    var cb = Date.now() + '' + Math.floor(Math.random() * 1000); // defeats proxy/CDN-side response caching
+    var directUrl = url + (url.indexOf('?') === -1 ? '?' : '&') + '_cb=' + cb;
     var encoded = encodeURIComponent(url);
     return [
-      { label: 'direkt', url: url, timeout: 5000 },
-      { label: 'codetabs-proxy', url: 'https://api.codetabs.com/v1/proxy?quest=' + encoded, timeout: 8000 },
-      { label: 'allorigins-proxy', url: 'https://api.allorigins.win/raw?url=' + encoded, timeout: 8000 },
-      { label: 'corsproxy.io', url: 'https://corsproxy.io/?url=' + encoded, timeout: 8000 }
+      { label: 'direkt', url: directUrl, timeout: 5000 },
+      { label: 'codetabs-proxy', url: 'https://api.codetabs.com/v1/proxy?quest=' + encoded + '%26_cb%3D' + cb, timeout: 8000 },
+      { label: 'allorigins-proxy', url: 'https://api.allorigins.win/raw?url=' + encoded + '%26_cb%3D' + cb, timeout: 8000 },
+      { label: 'corsproxy.io', url: 'https://corsproxy.io/?url=' + encoded + '%26_cb%3D' + cb, timeout: 8000 }
     ];
   }
 
