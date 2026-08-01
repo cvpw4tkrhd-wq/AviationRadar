@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>LUFTRUM — Live flygradar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #050807;
+    --panel: #0a120e;
+    --panel-raised: #0e1a14;
+    --grid: #123322;
+    --grid-strong: #1d4a30;
+    --phosphor: #4dffa0;
+    --phosphor-soft: rgba(77,255,160,0.35);
+    --phosphor-dim: #237a4e;
+    --amber: #ffb020;
+    --danger: #ff5a5a;
+    --text: #d9ffe9;
+    --text-dim: #6fae8c;
+    --text-faint: #3d5f4c;
+    --mono: 'JetBrains Mono', monospace;
+    --display: 'Space Grotesk', sans-serif;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0; background:var(--bg); color:var(--text); font-family:var(--mono); min-height:100vh;}
+  body{
+    background:
+      radial-gradient(ellipse at 50% -10%, rgba(77,255,160,0.06), transparent 60%),
+      var(--bg);
+  }
+  .wrap{max-width:1180px; margin:0 auto; padding:20px 16px 60px;}
+
+  header{display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:14px; padding-bottom:18px; border-bottom:1px solid var(--grid-strong); margin-bottom:22px;}
+  .eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.28em; color:var(--phosphor-dim); text-transform:uppercase; margin:0 0 6px;}
+  h1{font-family:var(--display); font-weight:700; font-size:clamp(28px,5vw,42px); letter-spacing:.02em; margin:0; color:var(--text);
+     text-shadow:0 0 18px var(--phosphor-soft);}
+  h1 span{color:var(--phosphor);}
+  .status-line{font-size:12px; color:var(--text-dim); margin-top:8px; display:flex; gap:8px; align-items:center;}
+  .dot{width:7px; height:7px; border-radius:50%; background:var(--phosphor-dim); display:inline-block;}
+  .dot.live{background:var(--phosphor); box-shadow:0 0 8px var(--phosphor);}
+  .dot.err{background:var(--danger); box-shadow:0 0 8px var(--danger);}
+
+  .controls{display:flex; flex-wrap:wrap; gap:10px; align-items:center;}
+  select, button, input{
+    font-family:var(--mono); font-size:12px; letter-spacing:.04em;
+    background:var(--panel-raised); color:var(--text); border:1px solid var(--grid-strong);
+    padding:9px 12px; border-radius:3px; cursor:pointer;
+  }
+  select:focus, button:focus, input:focus{outline:2px solid var(--phosphor-dim); outline-offset:1px;}
+  button{color:var(--phosphor); text-transform:uppercase; letter-spacing:.08em; font-weight:600; transition:background .15s, color .15s;}
+  button:hover{background:var(--phosphor-dim); color:#04150c;}
+  button.ghost{color:var(--text-dim); font-weight:500;}
+  button.ghost:hover{background:var(--panel); color:var(--text);}
+
+  main{display:grid; grid-template-columns:minmax(380px, 720px) 1fr; gap:22px;}
+  @media (max-width:860px){ main{grid-template-columns:1fr;} }
+
+  .scope-card, .list-card{background:var(--panel); border:1px solid var(--grid-strong); border-radius:6px; padding:16px;}
+  .card-title{font-family:var(--mono); font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--text-dim); margin:0 0 12px; display:flex; justify-content:space-between; align-items:center;}
+
+  .scope-wrap{position:relative; width:100%; aspect-ratio:1/1; border-radius:14px; overflow:hidden;
+    background:radial-gradient(circle at 50% 50%, #0c1712 0%, #060b08 78%, #040705 100%);
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.6), inset 0 0 2px var(--grid-strong);}
+  .scope-wrap svg{width:100%; height:100%; display:block;}
+
+  .sweep{transform-origin:50% 50%; animation:spin 4.5s linear infinite;}
+  @keyframes spin{ to{ transform:rotate(360deg);} }
+
+  .blip circle.core{filter:drop-shadow(0 0 4px var(--phosphor));}
+  .blip.selected circle.core{fill:var(--amber); filter:drop-shadow(0 0 6px var(--amber));}
+  .blip .ping{animation:ping 1.8s ease-out; transform-origin:center;}
+  @keyframes ping{ from{ r:1; opacity:.9;} to{ r:22; opacity:0;} }
+
+  .center-mark{filter:drop-shadow(0 0 5px var(--phosphor));}
+
+  .scope-footnote{font-size:10.5px; color:var(--text-faint); text-align:center; margin-top:10px; letter-spacing:.02em;}
+
+  .empty, .loading{padding:30px 10px; text-align:center; color:var(--text-dim); font-size:13px; line-height:1.6;}
+  .loading::after{content:'▮'; animation:blink 1s steps(2) infinite; margin-left:4px;}
+  @keyframes blink{ 50%{ opacity:0;} }
+
+  .manual{display:none; gap:8px; flex-wrap:wrap; margin-top:10px; padding-top:10px; border-top:1px dashed var(--grid-strong);}
+  .manual.open{display:flex;}
+  .manual input{width:110px;}
+  .manual label{font-size:10px; color:var(--text-faint); display:block; margin-bottom:3px; letter-spacing:.06em;}
+  .manual-field{display:flex; flex-direction:column;}
+
+  table{width:100%; border-collapse:collapse; font-size:12.5px;}
+  thead th{text-align:left; font-weight:600; color:var(--text-faint); font-size:10px; letter-spacing:.12em; text-transform:uppercase; padding:0 8px 8px; border-bottom:1px solid var(--grid-strong); cursor:pointer; user-select:none;}
+  thead th:hover{color:var(--phosphor-dim);}
+  tbody tr{border-bottom:1px solid var(--grid); cursor:pointer; transition:background .12s;}
+  tbody tr:hover{background:var(--panel-raised);}
+  tbody tr.selected{background:rgba(255,176,32,0.08); box-shadow:inset 3px 0 0 var(--amber);}
+  tbody td{padding:9px 8px; color:var(--text); white-space:nowrap;}
+  tbody td.callsign{color:var(--phosphor); font-weight:600; letter-spacing:.03em;}
+  tbody td.dim{color:var(--text-dim);}
+  .list-scroll{max-height:420px; overflow-y:auto;}
+  .list-scroll::-webkit-scrollbar{width:6px;}
+  .list-scroll::-webkit-scrollbar-thumb{background:var(--grid-strong); border-radius:3px;}
+
+  .detail{margin-top:16px; padding-top:14px; border-top:1px solid var(--grid-strong);}
+  .detail-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:12px; margin-top:10px;}
+  .detail-item .k{font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-faint); margin-bottom:3px;}
+  .detail-item .v{font-size:16px; color:var(--phosphor); font-weight:600;}
+  .detail-empty{color:var(--text-faint); font-size:12px; font-style:normal;}
+
+  footer{margin-top:26px; text-align:center; font-size:10.5px; color:var(--text-faint); letter-spacing:.03em;}
+  footer a{color:var(--text-dim);}
+
+  @media (prefers-reduced-motion: reduce){
+    .sweep{animation:none;}
+    .blip .ping{animation:none; display:none;}
+  }
+
+  .version-badge{
+    position:fixed; top:12px; right:14px; z-index:50;
+    font-family:var(--mono); font-size:10px; letter-spacing:.08em;
+    color:var(--phosphor-dim); background:var(--panel-raised);
+    border:1px solid var(--grid-strong); border-radius:20px;
+    padding:4px 10px; opacity:.85;
+  }
+  @media (max-width:520px){ .version-badge{ position:static; display:inline-block; margin-bottom:10px; } }
+</style>
+</head>
+<body>
+<div class="version-badge">v1.2</div>
+<div class="wrap">
+
+  <header>
+    <div>
+      <p class="eyebrow">Luftbevakning · realtid</p>
+      <h1>LUFT<span>RUM</span></h1>
+      <div class="status-line">
+        <span class="dot" id="statusDot"></span>
+        <span id="statusText">Initierar…</span>
+      </div>
+    </div>
+    <div class="controls">
+      <select id="rangeSelect" aria-label="Räckvidd">
+        <option value="25">25 km</option>
+        <option value="50" selected>50 km</option>
+        <option value="100">100 km</option>
+        <option value="200">200 km</option>
+        <option value="400">400 km</option>
+      </select>
+      <button id="refreshBtn" type="button">Uppdatera</button>
+      <button id="locBtn" class="ghost" type="button">Position</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="scope-card">
+      <p class="card-title">
+        <span>Radarskärm</span>
+        <span id="rangeLabel">50 KM</span>
+      </p>
+      <div class="scope-wrap" id="scopeWrap">
+        <svg id="scopeSvg" viewBox="0 0 460 460"></svg>
+      </div>
+      <p class="scope-footnote" id="scopeFootnote">Väntar på position…</p>
+
+      <div class="manual open" id="manualPanel">
+        <p style="width:100%; font-size:10.5px; color:var(--text-faint); margin:0 0 2px;">Automatisk positionering opålitlig hos dig? Ange koordinater direkt (t.ex. från Google Maps: håll fingret på din plats):</p>
+        <div class="manual-field">
+          <label for="latInput">Latitud</label>
+          <input id="latInput" type="text" placeholder="59.3293">
+        </div>
+        <div class="manual-field">
+          <label for="lonInput">Longitud</label>
+          <input id="lonInput" type="text" placeholder="18.0686">
+        </div>
+        <div class="manual-field" style="justify-content:flex-end; display:flex;">
+          <button id="manualSetBtn" type="button">Använd koordinater</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="list-card">
+      <p class="card-title">
+        <span>Flygplan inom räckvidd</span>
+        <span id="countLabel">0</span>
+      </p>
+      <div class="list-scroll">
+        <table id="acTable" aria-live="polite">
+          <thead>
+            <tr>
+              <th data-key="callsign">Anrop</th>
+              <th data-key="alt">Höjd</th>
+              <th data-key="spd">Fart</th>
+              <th data-key="dist">Avstånd</th>
+              <th data-key="hdg">Riktn.</th>
+              <th data-key="country">Ursprung</th>
+            </tr>
+          </thead>
+          <tbody id="acTableBody"></tbody>
+        </table>
+        <div class="empty" id="emptyState" style="display:none;">Inga flygplan inom räckvidd just nu.</div>
+        <div class="loading" id="loadingState">Hämtar flygdata</div>
+      </div>
+
+      <div class="detail" id="detailPanel">
+        <p class="card-title" style="margin-bottom:0;">Vald flygning</p>
+        <div id="detailContent">
+          <p class="detail-empty" style="margin-top:10px;">Klicka på ett flygplan i listan eller på radarn för detaljer.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Flygdata från <a href="https://opensky-network.org" target="_blank" rel="noopener">OpenSky Network</a> (öppen, anonym åtkomst — ca 5–15 s fördröjning).
+    Positioner beräknas lokalt i din webbläsare och skickas aldrig vidare.
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var state = {
+    userLat: null,
+    userLon: null,
+    rangeKm: 50,
+    aircraft: [],
+    selectedIcao: null,
+    sortKey: 'dist',
+    sortAsc: true,
+    refreshTimer: null,
+    countdownTimer: null,
+    countdownSec: 15,
+    fetching: false
+  };
+
+  var els = {
+    statusDot: document.getElementById('statusDot'),
+    statusText: document.getElementById('statusText'),
+    rangeSelect: document.getElementById('rangeSelect'),
+    rangeLabel: document.getElementById('rangeLabel'),
+    refreshBtn: document.getElementById('refreshBtn'),
+    locBtn: document.getElementById('locBtn'),
+    scopeSvg: document.getElementById('scopeSvg'),
+    scopeFootnote: document.getElementById('scopeFootnote'),
+    manualPanel: document.getElementById('manualPanel'),
+    latInput: document.getElementById('latInput'),
+    lonInput: document.getElementById('lonInput'),
+    manualSetBtn: document.getElementById('manualSetBtn'),
+    countLabel: document.getElementById('countLabel'),
+    acTableBody: document.getElementById('acTableBody'),
+    emptyState: document.getElementById('emptyState'),
+    loadingState: document.getElementById('loadingState'),
+    detailContent: document.getElementById('detailContent'),
+    acTable: document.getElementById('acTable')
+  };
+
+  // ---------- geo helpers ----------
+  function toRad(d){ return d * Math.PI / 180; }
+  function toDeg(r){ return r * 180 / Math.PI; }
+
+  function haversineKm(lat1, lon1, lat2, lon2){
+    var R = 6371;
+    var dLat = toRad(lat2 - lat1);
+    var dLon = toRad(lon2 - lon1);
+    var a = Math.sin(dLat/2)*Math.sin(dLat/2) +
+            Math.cos(toRad(lat1))*Math.cos(toRad(lat2)) *
+            Math.sin(dLon/2)*Math.sin(dLon/2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  }
+
+  function bearingDeg(lat1, lon1, lat2, lon2){
+    var y = Math.sin(toRad(lon2-lon1)) * Math.cos(toRad(lat2));
+    var x = Math.cos(toRad(lat1))*Math.sin(toRad(lat2)) -
+            Math.sin(toRad(lat1))*Math.cos(toRad(lat2))*Math.cos(toRad(lon2-lon1));
+    var brng = toDeg(Math.atan2(y, x));
+    return (brng + 360) % 360;
+  }
+
+  function boundingBox(lat, lon, rangeKm){
+    var latDelta = rangeKm / 111.32;
+    var lonDelta = rangeKm / (111.32 * Math.cos(toRad(lat)) || 1);
+    return {
+      lamin: lat - latDelta,
+      lamax: lat + latDelta,
+      lomin: lon - lonDelta,
+      lomax: lon + lonDelta
+    };
+  }
+
+  // ---------- status ----------
+  function setStatus(text, mode){
+    els.statusText.textContent = text;
+    els.statusDot.className = 'dot' + (mode === 'live' ? ' live' : mode === 'err' ? ' err' : '');
+  }
+
+  // ---------- location (browser API + 3 IP services raced, fastest wins) ----------
+  function geoViaBrowser(){
+    return new Promise(function(resolve, reject){
+      if (!navigator.geolocation){
+        reject(new Error('Geolocation API saknas i denna miljö'));
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(function(pos){
+        resolve({
+          lat: pos.coords.latitude,
+          lon: pos.coords.longitude,
+          source: 'Enhetens platstjänst'
+        });
+      }, function(err){
+        reject(new Error('Enhetens platstjänst nekad/otillgänglig (kod ' + err.code + ')'));
+      }, { enableHighAccuracy:false, timeout:8000, maximumAge:60000 });
+    });
+  }
+
+  function fetchJson(url){
+    return fetch(url, { cache:'no-store', mode:'cors' }).then(function(res){
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    });
+  }
+
+  function geoViaIpwho(){
+    return fetchJson('https://ipwho.is/').then(function(d){
+      if (!d || d.success === false || typeof d.latitude !== 'number') throw new Error('inget giltigt svar');
+      return { lat: d.latitude, lon: d.longitude, source: 'IP-position (ipwho.is' + (d.city ? ', ' + d.city : '') + ')' };
+    }).catch(function(e){ throw new Error('ipwho.is: ' + e.message); });
+  }
+
+  function geoViaGeojs(){
+    return fetchJson('https://get.geojs.io/v1/ip/geo.json').then(function(d){
+      var lat = parseFloat(d && d.latitude), lon = parseFloat(d && d.longitude);
+      if (isNaN(lat) || isNaN(lon)) throw new Error('inget giltigt svar');
+      return { lat: lat, lon: lon, source: 'IP-position (geojs.io' + (d.city ? ', ' + d.city : '') + ')' };
+    }).catch(function(e){ throw new Error('geojs.io: ' + e.message); });
+  }
+
+  function geoViaIpapi(){
+    return fetchJson('https://ipapi.co/json/').then(function(d){
+      if (!d || typeof d.latitude !== 'number' || typeof d.longitude !== 'number') throw new Error('inget giltigt svar');
+      return { lat: d.latitude, lon: d.longitude, source: 'IP-position (ipapi.co' + (d.city ? ', ' + d.city : '') + ')' };
+    }).catch(function(e){ throw new Error('ipapi.co: ' + e.message); });
+  }
+
+  function requestLocation(){
+    setStatus('Frågar fyra positionstjänster — använder den som svarar snabbast…', '');
+    var settled = false;
+    var errors = [];
+    var serviceFns = [geoViaBrowser, geoViaIpwho, geoViaGeojs, geoViaIpapi];
+
+    serviceFns.forEach(function(fn){
+      fn().then(function(result){
+        if (settled) return;
+        settled = true;
+        state.userLat = result.lat;
+        state.userLon = result.lon;
+        setStatus('Position via ' + result.source + ' — hämtar flygdata…', '');
+        startTracking();
+      }).catch(function(err){
+        errors.push(err.message);
+        if (!settled && errors.length >= serviceFns.length){
+          handleLocationFailure('Alla positionstjänster misslyckades (' + errors.join(' · ') + '). Ange koordinater manuellt nedan — t.ex. via Google Maps (håll fingret på din plats).');
+        }
+      });
+    });
+
+  }
+
+  function handleLocationFailure(msg){
+    setStatus(msg, 'err');
+    els.manualPanel.classList.add('open');
+    els.scopeFootnote.textContent = 'Ingen position — ange koordinater manuellt.';
+  }
+
+  els.manualSetBtn.addEventListener('click', function(){
+    var lat = parseFloat(els.latInput.value.replace(',', '.'));
+    var lon = parseFloat(els.lonInput.value.replace(',', '.'));
+    if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180){
+      setStatus('Ogiltiga koordinater. Kontrollera format (t.ex. 59.33).', 'err');
+      return;
+    }
+    state.userLat = lat;
+    state.userLon = lon;
+    setStatus('Manuell position satt — hämtar flygdata…', '');
+    startTracking();
+  });
+
+  els.locBtn.addEventListener('click', function(){
+    els.manualPanel.classList.toggle('open');
+    requestLocation();
+  });
+
+  // ---------- fetching ----------
+  function fetchAircraft(){
+    if (state.userLat === null || state.fetching) return;
+    state.fetching = true;
+    els.loadingState.style.display = 'block';
+    els.emptyState.style.display = 'none';
+
+    var bb = boundingBox(state.userLat, state.userLon, state.rangeKm);
+    var url = 'https://opensky-network.org/api/states/all?lamin=' + bb.lamin +
+              '&lomin=' + bb.lomin + '&lamax=' + bb.lamax + '&lomax=' + bb.lomax;
+
+    fetch(url)
+      .then(function(res){
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function(data){
+        var raw = data && data.states ? data.states : [];
+        var list = [];
+        for (var i = 0; i < raw.length; i++){
+          var s = raw[i];
+          var lon = s[5], lat = s[6];
+          if (lat === null || lon === null) continue;
+          var dist = haversineKm(state.userLat, state.userLon, lat, lon);
+          if (dist > state.rangeKm) continue;
+          list.push({
+            icao24: s[0],
+            callsign: (s[1] || '').trim() || '—',
+            country: s[2] || '—',
+            lon: lon, lat: lat,
+            baroAlt: s[7],
+            onGround: s[8],
+            velocity: s[9],
+            trueTrack: s[10],
+            geoAlt: s[13],
+            dist: dist,
+            bearing: bearingDeg(state.userLat, state.userLon, lat, lon)
+          });
+        }
+        state.aircraft = list;
+        setStatus('Live — ' + list.length + ' flygplan inom ' + state.rangeKm + ' km', 'live');
+        render();
+        state.fetching = false;
+      })
+      .catch(function(err){
+        setStatus('Kunde inte hämta flygdata (' + err.message + '). Försöker igen…', 'err');
+        state.fetching = false;
+        els.loadingState.style.display = 'none';
+      });
+  }
+
+  function startTracking(){
+    if (state.refreshTimer) clearInterval(state.refreshTimer);
+    if (state.countdownTimer) clearInterval(state.countdownTimer);
+    fetchAircraft();
+    state.countdownSec = 15;
+    state.refreshTimer = setInterval(fetchAircraft, 15000);
+  }
+
+  els.refreshBtn.addEventListener('click', function(){
+    if (state.userLat !== null) fetchAircraft();
+    else requestLocation();
+  });
+
+  els.rangeSelect.addEventListener('change', function(){
+    state.rangeKm = parseInt(els.rangeSelect.value, 10);
+    els.rangeLabel.textContent = state.rangeKm + ' KM';
+    buildStaticScope();
+    if (state.userLat !== null) fetchAircraft();
+    else renderBlips();
+  });
+
+  // ---------- rendering: radar scope ----------
+  var SVG_NS = 'http://www.w3.org/2000/svg';
+  function svgEl(tag, attrs){
+    var el = document.createElementNS(SVG_NS, tag);
+    for (var k in attrs) el.setAttribute(k, attrs[k]);
+    return el;
+  }
+
+  function buildStaticScope(){
+    var svg = els.scopeSvg;
+    svg.innerHTML = '';
+    var cx = 230, cy = 230, maxR = 195;
+
+    // range rings
+    var rings = 4;
+    for (var i = 1; i <= rings; i++){
+      var r = (maxR / rings) * i;
+      svg.appendChild(svgEl('circle', {cx:cx, cy:cy, r:r, fill:'none', stroke:'#123322', 'stroke-width':1}));
+      var kmVal = Math.round(state.rangeKm * (i/rings));
+      var label = svgEl('text', {x:cx+4, y:cy-r+12, fill:'#3d5f4c', 'font-size':9, 'font-family':'JetBrains Mono, monospace'});
+      label.textContent = kmVal + 'km';
+      svg.appendChild(label);
+    }
+
+    // cross lines
+    svg.appendChild(svgEl('line', {x1:cx, y1:cy-maxR, x2:cx, y2:cy+maxR, stroke:'#123322', 'stroke-width':1}));
+    svg.appendChild(svgEl('line', {x1:cx-maxR, y1:cy, x2:cx+maxR, y2:cy, stroke:'#123322', 'stroke-width':1}));
+
+    // compass labels
+    var compass = [['N',cx,cy-maxR-10],['S',cx,cy+maxR+16],['V',cx-maxR-14,cy+4],['Ö',cx+maxR+8,cy+4]];
+    compass.forEach(function(c){
+      var t = svgEl('text', {x:c[1], y:c[2], fill:'#4dffa0', 'font-size':12, 'font-family':'JetBrains Mono, monospace', 'text-anchor':'middle', 'font-weight':'600'});
+      t.textContent = c[0];
+      svg.appendChild(t);
+    });
+
+    // sweep group
+    var sweepGroup = svgEl('g', {class:'sweep', id:'sweepGroup'});
+    var sweepGrad = svgEl('defs', {});
+    var grad = svgEl('linearGradient', {id:'sweepGrad', x1:'0', y1:'0', x2:'1', y2:'0'});
+    grad.appendChild(svgEl('stop', {offset:'0%', 'stop-color':'#4dffa0', 'stop-opacity':'0'}));
+    grad.appendChild(svgEl('stop', {offset:'100%', 'stop-color':'#4dffa0', 'stop-opacity':'0.28'}));
+    sweepGrad.appendChild(grad);
+    svg.appendChild(sweepGrad);
+    var sweepPath = svgEl('path', {
+      d: describeSector(cx, cy, maxR, -14, 0),
+      fill: 'url(#sweepGrad)'
+    });
+    sweepGroup.appendChild(sweepPath);
+    svg.appendChild(sweepGroup);
+
+    // center marker (user)
+    var centerGroup = svgEl('g', {class:'center-mark'});
+    centerGroup.appendChild(svgEl('circle', {cx:cx, cy:cy, r:4, fill:'#4dffa0'}));
+    centerGroup.appendChild(svgEl('circle', {cx:cx, cy:cy, r:9, fill:'none', stroke:'#4dffa0', 'stroke-width':1, opacity:0.5}));
+    svg.appendChild(centerGroup);
+
+    // group for blips (populated on each render)
+    svg.appendChild(svgEl('g', {id:'blipGroup'}));
+  }
+
+  function describeSector(cx, cy, r, startAngle, endAngle){
+    function polar(angleDeg){
+      var a = toRad(angleDeg - 90);
+      return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
+    }
+    var p1 = polar(startAngle);
+    var p2 = polar(endAngle);
+    return 'M ' + cx + ' ' + cy + ' L ' + p1.x + ' ' + p1.y + ' A ' + r + ' ' + r + ' 0 0 1 ' + p2.x + ' ' + p2.y + ' Z';
+  }
+
+  function renderBlips(){
+    var cx = 230, cy = 230, maxR = 195;
+    var group = document.getElementById('blipGroup');
+    if (!group) return;
+    group.innerHTML = '';
+
+    state.aircraft.forEach(function(ac){
+      var r = Math.min((ac.dist / state.rangeKm) * maxR, maxR);
+      var angleRad = toRad(ac.bearing);
+      var x = cx + r * Math.sin(angleRad);
+      var y = cy - r * Math.cos(angleRad);
+
+      var isSelected = ac.icao24 === state.selectedIcao;
+      var g = svgEl('g', {class:'blip' + (isSelected ? ' selected' : ''), 'data-icao':ac.icao24, style:'cursor:pointer;'});
+
+      // heading tick
+      if (ac.trueTrack !== null && ac.trueTrack !== undefined){
+        var hr = toRad(ac.trueTrack);
+        var hx = x + 9 * Math.sin(hr);
+        var hy = y - 9 * Math.cos(hr);
+        g.appendChild(svgEl('line', {x1:x, y1:y, x2:hx, y2:hy, stroke: isSelected ? '#ffb020' : '#4dffa0', 'stroke-width':1.4, opacity:0.85}));
+      }
+
+      var core = svgEl('circle', {class:'core', cx:x, cy:y, r:3.2, fill: isSelected ? '#ffb020' : '#4dffa0'});
+      g.appendChild(core);
+
+      if (ac.callsign && ac.callsign !== '—'){
+        var label = svgEl('text', {x:x+6, y:y-6, 'font-size':8.5, fill: isSelected ? '#ffb020' : '#8fd9b4', 'font-family':'JetBrains Mono, monospace'});
+        label.textContent = ac.callsign;
+        g.appendChild(label);
+      }
+
+      g.addEventListener('click', function(){
+        selectAircraft(ac.icao24);
+      });
+
+      group.appendChild(g);
+    });
+  }
+
+  // ---------- rendering: table ----------
+  function sortAircraft(){
+    var key = state.sortKey;
+    var arr = state.aircraft.slice();
+    arr.sort(function(a,b){
+      var av, bv;
+      switch(key){
+        case 'callsign': av = a.callsign; bv = b.callsign; break;
+        case 'alt': av = a.baroAlt||0; bv = b.baroAlt||0; break;
+        case 'spd': av = a.velocity||0; bv = b.velocity||0; break;
+        case 'hdg': av = a.trueTrack||0; bv = b.trueTrack||0; break;
+        case 'country': av = a.country; bv = b.country; break;
+        default: av = a.dist; bv = b.dist;
+      }
+      if (av < bv) return state.sortAsc ? -1 : 1;
+      if (av > bv) return state.sortAsc ? 1 : -1;
+      return 0;
+    });
+    return arr;
+  }
+
+  function renderTable(){
+    var arr = sortAircraft();
+    els.acTableBody.innerHTML = '';
+    els.countLabel.textContent = arr.length;
+
+    if (arr.length === 0){
+      els.emptyState.style.display = 'block';
+      els.acTable.style.display = 'none';
+    } else {
+      els.emptyState.style.display = 'none';
+      els.acTable.style.display = 'table';
+    }
+
+    arr.forEach(function(ac){
+      var tr = document.createElement('tr');
+      if (ac.icao24 === state.selectedIcao) tr.className = 'selected';
+      tr.innerHTML =
+        '<td class="callsign">' + ac.callsign + '</td>' +
+        '<td>' + (ac.baroAlt !== null ? Math.round(ac.baroAlt) + ' m' : '—') + '</td>' +
+        '<td>' + (ac.velocity !== null ? Math.round(ac.velocity*3.6) + ' km/h' : '—') + '</td>' +
+        '<td>' + ac.dist.toFixed(1) + ' km</td>' +
+        '<td>' + (ac.trueTrack !== null ? Math.round(ac.trueTrack) + '°' : '—') + '</td>' +
+        '<td class="dim">' + ac.country + '</td>';
+      tr.addEventListener('click', function(icao){
+        return function(){ selectAircraft(icao); };
+      }(ac.icao24));
+      els.acTableBody.appendChild(tr);
+    });
+  }
+
+  function selectAircraft(icao){
+    state.selectedIcao = (state.selectedIcao === icao) ? null : icao;
+    render();
+    renderDetail();
+  }
+
+  function renderDetail(){
+    if (!state.selectedIcao){
+      els.detailContent.innerHTML = '<p class="detail-empty" style="margin-top:10px;">Klicka på ett flygplan i listan eller på radarn för detaljer.</p>';
+      return;
+    }
+    var ac = state.aircraft.filter(function(a){ return a.icao24 === state.selectedIcao; })[0];
+    if (!ac){
+      els.detailContent.innerHTML = '<p class="detail-empty" style="margin-top:10px;">Flygplanet är inte längre inom räckvidd.</p>';
+      state.selectedIcao = null;
+      return;
+    }
+    var compassPoints = ['N','NNÖ','NÖ','ÖNÖ','Ö','ÖSÖ','SÖ','SSÖ','S','SSV','SV','VSV','V','VNV','NV','NNV'];
+    var idx = Math.round((ac.bearing % 360) / 22.5) % 16;
+    els.detailContent.innerHTML =
+      '<div class="detail-grid">' +
+        '<div class="detail-item"><div class="k">Anropssignal</div><div class="v">' + ac.callsign + '</div></div>' +
+        '<div class="detail-item"><div class="k">Ursprungsland</div><div class="v" style="font-size:13px;">' + ac.country + '</div></div>' +
+        '<div class="detail-item"><div class="k">Höjd (baro)</div><div class="v">' + (ac.baroAlt!==null? Math.round(ac.baroAlt)+' m':'—') + '</div></div>' +
+        '<div class="detail-item"><div class="k">Fart</div><div class="v">' + (ac.velocity!==null? Math.round(ac.velocity*3.6)+' km/h':'—') + '</div></div>' +
+        '<div class="detail-item"><div class="k">Avstånd</div><div class="v">' + ac.dist.toFixed(1) + ' km</div></div>' +
+        '<div class="detail-item"><div class="k">Riktning från dig</div><div class="v">' + compassPoints[idx] + ' (' + Math.round(ac.bearing) + '°)</div></div>' +
+        '<div class="detail-item"><div class="k">Kurs (heading)</div><div class="v">' + (ac.trueTrack!==null? Math.round(ac.trueTrack)+'°':'—') + '</div></div>' +
+        '<div class="detail-item"><div class="k">Status</div><div class="v" style="font-size:13px;">' + (ac.onGround ? 'På marken' : 'I luften') + '</div></div>' +
+      '</div>';
+  }
+
+  // sortable headers
+  document.querySelectorAll('#acTable thead th').forEach(function(th){
+    th.addEventListener('click', function(){
+      var key = th.getAttribute('data-key');
+      if (state.sortKey === key) state.sortAsc = !state.sortAsc;
+      else { state.sortKey = key; state.sortAsc = true; }
+      renderTable();
+    });
+  });
+
+  function render(){
+    els.loadingState.style.display = 'none';
+    if (!document.getElementById('sweepGroup')) buildStaticScope();
+    renderBlips();
+    renderTable();
+    renderDetail();
+    els.scopeFootnote.textContent = state.aircraft.length + ' objekt spårade — ' + new Date().toLocaleTimeString('sv-SE');
+  }
+
+  // init
+  els.rangeLabel.textContent = state.rangeKm + ' KM';
+  buildStaticScope();
+  requestLocation();
+
+})();
+</script>
+</body>
+</html>
