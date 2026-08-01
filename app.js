@@ -300,35 +300,49 @@
     });
   }
 
+  // Shared parser for the "readsb"/ADSBX-v2-style response format used by both
+  // adsb.lol and adsb.fi (opendata.adsb.fi is an explicitly ADSBX-v2-compatible mirror).
+  function parseReadsbStyle(data, lat, lon, rangeKm){
+    var raw = (data && data.ac) ? data.ac : [];
+    var list = [];
+    for (var i = 0; i < raw.length; i++){
+      var s = raw[i];
+      if (typeof s.lat !== 'number' || typeof s.lon !== 'number') continue;
+      var dist = haversineKm(lat, lon, s.lat, s.lon);
+      if (dist > rangeKm) continue;
+      var onGround = (s.alt_baro === 'ground');
+      var altM = (!onGround && typeof s.alt_baro === 'number') ? s.alt_baro * 0.3048 : (onGround ? 0 : null);
+      var velMs = (typeof s.gs === 'number') ? s.gs * 0.514444 : null;
+      list.push({
+        icao24: (s.hex || (s.flight || String(i))).toLowerCase(),
+        callsign: (s.flight || '').trim() || '—',
+        country: s.t || s.r || '—',
+        lon: s.lon, lat: s.lat,
+        baroAlt: altM,
+        onGround: onGround,
+        velocity: velMs,
+        trueTrack: (typeof s.track === 'number') ? s.track : null,
+        geoAlt: null,
+        dist: dist,
+        bearing: bearingDeg(lat, lon, s.lat, s.lon)
+      });
+    }
+    return list;
+  }
+
   function fetchFromAdsbLol(lat, lon, rangeKm){
     var radiusNm = Math.min(rangeKm / 1.852, 250);
     var url = 'https://api.adsb.lol/v2/point/' + lat + '/' + lon + '/' + radiusNm.toFixed(1);
     return fetchJsonResilient(url, 'adsblol').then(function(data){
-      var raw = (data && data.ac) ? data.ac : [];
-      var list = [];
-      for (var i = 0; i < raw.length; i++){
-        var s = raw[i];
-        if (typeof s.lat !== 'number' || typeof s.lon !== 'number') continue;
-        var dist = haversineKm(lat, lon, s.lat, s.lon);
-        if (dist > rangeKm) continue;
-        var onGround = (s.alt_baro === 'ground');
-        var altM = (!onGround && typeof s.alt_baro === 'number') ? s.alt_baro * 0.3048 : (onGround ? 0 : null);
-        var velMs = (typeof s.gs === 'number') ? s.gs * 0.514444 : null;
-        list.push({
-          icao24: s.hex || (s.flight || String(i)),
-          callsign: (s.flight || '').trim() || '—',
-          country: s.t || s.r || '—',
-          lon: s.lon, lat: s.lat,
-          baroAlt: altM,
-          onGround: onGround,
-          velocity: velMs,
-          trueTrack: (typeof s.track === 'number') ? s.track : null,
-          geoAlt: null,
-          dist: dist,
-          bearing: bearingDeg(lat, lon, s.lat, s.lon)
-        });
-      }
-      return list;
+      return parseReadsbStyle(data, lat, lon, rangeKm);
+    });
+  }
+
+  function fetchFromAdsbFi(lat, lon, rangeKm){
+    var radiusNm = Math.min(rangeKm / 1.852, 250);
+    var url = 'https://opendata.adsb.fi/api/v2/lat/' + lat + '/lon/' + lon + '/dist/' + radiusNm.toFixed(1);
+    return fetchJsonResilient(url, 'adsbfi').then(function(data){
+      return parseReadsbStyle(data, lat, lon, rangeKm);
     });
   }
 
@@ -363,10 +377,9 @@
     });
   }
 
-  // adsb.lol is built for frequent polling and is tried immediately. OpenSky has a much
-  // stricter anonymous quota, so it's only woken up if adsb.lol hasn't answered within
-  // a short grace window — keeping steady-state polling cheap while still having a fast
-  // fallback when adsb.lol is genuinely down.
+  // adsb.lol and adsb.fi are both free, keyless, and built for frequent polling — they're
+  // raced against each other immediately. OpenSky has a much stricter anonymous quota, so
+  // it's only woken up if neither has answered within a short grace window.
   function fetchAircraft(){
     if (state.userLat === null || state.fetching) return;
     state.fetching = true;
@@ -378,7 +391,7 @@
     var lat = state.userLat, lon = state.userLon, rangeKm = state.rangeKm;
     var settled = false;
     var errors = [];
-    var expected = 1;
+    var expected = 2; // adsb.lol + adsb.fi race immediately
     var openSkyStarted = false;
     var graceTimer = null;
 
@@ -398,7 +411,7 @@
     function startOpenSky(){
       if (openSkyStarted || settled) return;
       openSkyStarted = true;
-      expected = 2;
+      expected = 3;
       fetchFromOpenSky(lat, lon, rangeKm).then(function(list){
         if (settled) return;
         settled = true;
@@ -411,17 +424,26 @@
 
     graceTimer = setTimeout(startOpenSky, 2500);
 
-    fetchFromAdsbLol(lat, lon, rangeKm).then(function(list){
-      if (settled) return;
-      settled = true;
-      clearTimeout(graceTimer);
-      applyAircraftResult(list, 'adsb.lol');
-    }).catch(function(err){
-      errors.push('adsb.lol: ' + err.message);
-      clearTimeout(graceTimer);
-      startOpenSky();
-      finishIfDone();
-    });
+    var tier1FailCount = 0;
+    function tier1Attempt(promise, label){
+      promise.then(function(list){
+        if (settled) return;
+        settled = true;
+        clearTimeout(graceTimer);
+        applyAircraftResult(list, label);
+      }).catch(function(err){
+        errors.push(label + ': ' + err.message);
+        tier1FailCount++;
+        if (tier1FailCount >= 2){
+          clearTimeout(graceTimer);
+          startOpenSky();
+        }
+        finishIfDone();
+      });
+    }
+
+    tier1Attempt(fetchFromAdsbLol(lat, lon, rangeKm), 'adsb.lol');
+    tier1Attempt(fetchFromAdsbFi(lat, lon, rangeKm), 'adsb.fi');
   }
 
   function applyAircraftResult(list, sourceName){
@@ -631,6 +653,55 @@
     });
   }
 
+  // ---------- aircraft lookup (type, manufacturer, owner, photo via adsbdb.com) ----------
+  var aircraftInfoCache = {}; // icao24 -> { status: 'loading'|'ok'|'none'|'error', data, message }
+
+  function fetchAircraftInfo(icao24){
+    var key = (icao24 || '').trim().toLowerCase();
+    if (!key) return;
+    var cached = aircraftInfoCache[key];
+    if (cached && cached.status !== 'error') return; // already loading/loaded
+
+    aircraftInfoCache[key] = { status:'loading' };
+    fetchJsonResilient('https://api.adsbdb.com/v0/aircraft/' + encodeURIComponent(key))
+      .then(function(data){
+        var ac = data && data.response && data.response.aircraft;
+        aircraftInfoCache[key] = ac ? { status:'ok', data: ac } : { status:'none' };
+        if (state.selectedIcao === icao24) renderDetail();
+      })
+      .catch(function(err){
+        aircraftInfoCache[key] = { status:'error', message: err.message };
+        if (state.selectedIcao === icao24) renderDetail();
+      });
+  }
+
+  function aircraftInfoBlockHtml(icao24){
+    var key = (icao24 || '').trim().toLowerCase();
+    var entry = aircraftInfoCache[key];
+    if (!entry || entry.status === 'loading'){
+      return '<div class="route-block"><p class="route-status">Hämtar flygplansdata…</p></div>';
+    }
+    if (entry.status === 'none'){
+      return '<div class="route-block"><p class="route-status">Flygplanet (' + icao24.toUpperCase() + ') finns inte i flygplansdatabasen.</p></div>';
+    }
+    if (entry.status === 'error'){
+      return '<div class="route-block"><p class="route-status">Kunde inte hämta flygplansdata (' + entry.message + ').</p></div>';
+    }
+    var d = entry.data;
+    var html = '<div class="route-block">';
+    html += '<div class="route-airline"><strong>' + (d.manufacturer || '') + (d.manufacturer && d.type ? ' ' : '') + (d.type || 'Okänd typ') + '</strong>' + (d.icao_type ? ' · ' + d.icao_type : '') + '</div>';
+    html += '<div class="detail-grid">';
+    html += '<div class="detail-item"><div class="k">Registrering</div><div class="v" style="font-size:14px;">' + (d.registration || '—') + '</div></div>';
+    html += '<div class="detail-item"><div class="k">Ägare / operatör</div><div class="v" style="font-size:13px;">' + (d.registered_owner || '—') + '</div></div>';
+    html += '<div class="detail-item"><div class="k">Registrerat land</div><div class="v" style="font-size:13px;">' + (d.registered_owner_country_name || '—') + '</div></div>';
+    html += '</div>';
+    if (d.url_photo_thumbnail){
+      html += '<a href="' + d.url_photo + '" target="_blank" rel="noopener"><img src="' + d.url_photo_thumbnail + '" alt="Foto av ' + (d.registration || 'flygplanet') + '" style="width:100%; border-radius:6px; margin-top:10px; display:block;"></a>';
+    }
+    html += '</div>';
+    return html;
+  }
+
   // ---------- route lookup (airline, origin, destination via adsbdb.com) ----------
   var routeCache = {}; // callsign -> { status: 'loading'|'ok'|'none'|'error', data, message }
 
@@ -699,7 +770,10 @@
     renderDetail();
     if (state.selectedIcao){
       var ac = state.aircraft.filter(function(a){ return a.icao24 === state.selectedIcao; })[0];
-      if (ac) fetchRoute(ac.callsign);
+      if (ac){
+        fetchRoute(ac.callsign);
+        fetchAircraftInfo(ac.icao24);
+      }
     }
   }
 
@@ -838,6 +912,7 @@
         '<div class="detail-item"><div class="k">Kurs (heading)</div><div class="v">' + (ac.trueTrack!==null? Math.round(ac.trueTrack)+'°':'—') + '</div></div>' +
         '<div class="detail-item"><div class="k">Status</div><div class="v" style="font-size:13px;">' + (ac.onGround ? 'På marken' : 'I luften') + '</div></div>' +
       '</div>' +
+      aircraftInfoBlockHtml(ac.icao24) +
       routeBlockHtml(ac.callsign);
   }
 
