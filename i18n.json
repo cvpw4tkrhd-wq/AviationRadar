@@ -1,0 +1,714 @@
+{
+  "_readme": "Översättningar för scorekorts-appen. Nycklar med {token} ersätts i JS. Fallback-ordning vid saknad nyckel: valt språk -> engelska -> svenska -> nyckeln själv.",
+  "version": 1,
+  "supported": ["sv", "no", "da", "fi", "is", "en", "es", "fr", "it", "de"],
+  "names": {
+    "sv": "Svenska", "no": "Norsk", "da": "Dansk", "fi": "Suomi", "is": "Íslenska",
+    "en": "English", "es": "Español", "fr": "Français", "it": "Italiano", "de": "Deutsch"
+  },
+  "strings": {
+    "eyebrow": {
+      "sv": "KLUBBRUNDA · 1–4 SPELARE", "no": "KLUBBRUNDE · 1–4 SPILLERE", "da": "KLUBRUNDE · 1–4 SPILLERE",
+      "fi": "KLUBIKIERROS · 1–4 PELAAJAA", "is": "KLÚBBHRINGUR · 1–4 LEIKMENN", "en": "CLUB ROUND · 1–4 PLAYERS",
+      "es": "RONDA DE CLUB · 1–4 JUGADORES", "fr": "PARTIE DE CLUB · 1–4 JOUEURS", "it": "GIRO DEL CLUB · 1–4 GIOCATORI",
+      "de": "CLUBRUNDE · 1–4 SPIELER"
+    },
+    "app_title": {
+      "sv": "Niohåls-scorekort", "no": "Ni-hulls scorekort", "da": "Ni-huls scorekort",
+      "fi": "Yhdeksän väylän tuloskortti", "is": "Níu holu skorkort", "en": "Nine-Hole Scorecard",
+      "es": "Tarjeta de nueve hoyos", "fr": "Carte de score neuf trous", "it": "Cartellino nove buche",
+      "de": "Neun-Loch-Scorekarte"
+    },
+    "subtitle": {
+      "sv": "9 hål · alla par 3 · par för rundan", "no": "9 hull · alle par 3 · par for runden", "da": "9 huller · alle par 3 · par for runden",
+      "fi": "9 väylää · kaikki par 3 · kierroksen par", "is": "9 holur · allar par 3 · par fyrir hringinn", "en": "9 holes · all par 3 · round par",
+      "es": "9 hoyos · todos par 3 · par de la ronda", "fr": "9 trous · tous par 3 · par du parcours", "it": "9 buche · tutte par 3 · par del giro",
+      "de": "9 Löcher · alle Par 3 · Runden-Par"
+    },
+    "date_label": {
+      "sv": "Datum", "no": "Dato", "da": "Dato", "fi": "Päivämäärä", "is": "Dagsetning",
+      "en": "Date", "es": "Fecha", "fr": "Date", "it": "Data", "de": "Datum"
+    },
+    "time_label": {
+      "sv": "Starttid", "no": "Starttid", "da": "Starttid", "fi": "Aloitusaika", "is": "Ráshringur",
+      "en": "Start time", "es": "Hora de salida", "fr": "Heure de départ", "it": "Ora di partenza", "de": "Startzeit"
+    },
+    "club_label": {
+      "sv": "Golfklubb", "no": "Golfklubb", "da": "Golfklub", "fi": "Golfseura", "is": "Golfklúbbur",
+      "en": "Golf club", "es": "Club de golf", "fr": "Club de golf", "it": "Circolo di golf", "de": "Golfclub"
+    },
+    "club_placeholder": {
+      "sv": "T.ex. Djursholms GK", "no": "F.eks. Oslo GK", "da": "F.eks. Odense GK", "fi": "Esim. Helsingin Golfklubi", "is": "T.d. Golfklúbbur Reykjavíkur",
+      "en": "e.g. Djursholm GC", "es": "P. ej. Club de Golf Madrid", "fr": "P. ex. Golf Club de Paris", "it": "Es. Golf Club Milano", "de": "Z.B. Golfclub München"
+    },
+    "locate_btn_title": {
+      "sv": "Hitta klubbar i närheten", "no": "Finn klubber i nærheten", "da": "Find klubber i nærheden", "fi": "Etsi lähellä olevia seuroja", "is": "Finna klúbba í nágrenninu",
+      "en": "Find nearby clubs", "es": "Buscar clubes cercanos", "fr": "Trouver des clubs à proximité", "it": "Trova circoli vicini", "de": "Clubs in der Nähe finden"
+    },
+    "players_label": {
+      "sv": "Spelare (max 4)", "no": "Spillere (maks 4)", "da": "Spillere (maks. 4)", "fi": "Pelaajat (enintään 4)", "is": "Leikmenn (hámark 4)",
+      "en": "Players (max 4)", "es": "Jugadores (máx. 4)", "fr": "Joueurs (max. 4)", "it": "Giocatori (max 4)", "de": "Spieler (max. 4)"
+    },
+    "add_player_btn": {
+      "sv": "+ Lägg till spelare", "no": "+ Legg til spiller", "da": "+ Tilføj spiller", "fi": "+ Lisää pelaaja", "is": "+ Bæta við leikmanni",
+      "en": "+ Add player", "es": "+ Añadir jugador", "fr": "+ Ajouter un joueur", "it": "+ Aggiungi giocatore", "de": "+ Spieler hinzufügen"
+    },
+    "gender_label": {
+      "sv": "Kön", "no": "Kjønn", "da": "Køn", "fi": "Sukupuoli", "is": "Kyn",
+      "en": "Sex", "es": "Sexo", "fr": "Sexe", "it": "Sesso", "de": "Geschlecht"
+    },
+    "extra_label": {
+      "sv": "Extraslag", "no": "Ekstraslag", "da": "Ekstraslag", "fi": "Lisälyönnit", "is": "Aukahögg",
+      "en": "Extra strokes", "es": "Golpes extra", "fr": "Coups supplémentaires", "it": "Colpi extra", "de": "Zusatzschläge"
+    },
+    "calc_btn_title": {
+      "sv": "Räkna ut extraslag automatiskt (kräver HCP, kön och en bana med känd slopetabell)",
+      "no": "Regn ut ekstraslag automatisk (krever HCP, kjønn og en bane med kjent slopetabell)",
+      "da": "Beregn ekstraslag automatisk (kræver HCP, køn og en bane med kendt slopetabel)",
+      "fi": "Laske lisälyönnit automaattisesti (vaatii HCP:n, sukupuolen ja radan tunnetulla slope-taulukolla)",
+      "is": "Reikna aukahögg sjálfkrafa (krefst forgjafar, kyns og vallar með þekkta hallatöflu)",
+      "en": "Calculate extra strokes automatically (needs HCP, sex, and a course with a known slope table)",
+      "es": "Calcular golpes extra automáticamente (requiere hándicap, sexo y un campo con tabla de slope conocida)",
+      "fr": "Calculer les coups supplémentaires automatiquement (nécessite index, sexe et un parcours avec table de slope connue)",
+      "it": "Calcola automaticamente i colpi extra (richiede HCP, sesso e un percorso con tabella slope nota)",
+      "de": "Zusatzschläge automatisch berechnen (benötigt HCP, Geschlecht und einen Platz mit bekannter Slope-Tabelle)"
+    },
+    "hole_th": {
+      "sv": "Hål", "no": "Hull", "da": "Hul", "fi": "Väylä", "is": "Hola",
+      "en": "Hole", "es": "Hoyo", "fr": "Trou", "it": "Buca", "de": "Loch"
+    },
+    "total_th": {
+      "sv": "Totalt", "no": "Totalt", "da": "I alt", "fi": "Yhteensä", "is": "Samtals",
+      "en": "Total", "es": "Total", "fr": "Total", "it": "Totale", "de": "Gesamt"
+    },
+    "par_row_label": {
+      "sv": "Par", "no": "Par", "da": "Par", "fi": "Par", "is": "Par",
+      "en": "Par", "es": "Par", "fr": "Par", "it": "Par", "de": "Par"
+    },
+    "index_row_label": {
+      "sv": "Index", "no": "Indeks", "da": "Indeks", "fi": "Indeksi", "is": "Vísitala",
+      "en": "Index", "es": "Índice", "fr": "Index", "it": "Indice", "de": "Index"
+    },
+    "index_info_title": {
+      "sv": "Skriv in din banas egna slagindex-siffror rakt av (t.ex. 1-18 eller udda tal) — appen räknar själv ut vilket hål som är svårast.",
+      "no": "Skriv inn banens egne slagindeks-tall direkte (f.eks. 1-18 eller oddetall) — appen regner selv ut hvilket hull som er vanskeligst.",
+      "da": "Indtast banens egne slagindeks-tal direkte (f.eks. 1-18 eller ulige tal) — appen beregner selv hvilket hul der er sværest.",
+      "fi": "Syötä radan omat lyöntitasoitusnumerot suoraan (esim. 1-18 tai parittomat) — sovellus laskee itse vaikeimman väylän.",
+      "is": "Sláðu inn vallarins eigin höggvísitölur beint (t.d. 1-18 eða oddatölur) — forritið reiknar sjálft út hvaða hola er erfiðust.",
+      "en": "Enter your course's own stroke-index numbers as printed (e.g. 1-18 or odd numbers only) — the app works out which hole is hardest itself.",
+      "es": "Introduce los números de índice de golpe propios de tu campo tal cual (p. ej. 1-18 o solo impares) — la app calcula sola qué hoyo es más difícil.",
+      "fr": "Saisissez les index de trou tels qu'imprimés par votre parcours (ex. 1-18 ou impairs uniquement) — l'appli calcule elle-même le trou le plus difficile.",
+      "it": "Inserisci gli indici colpo del tuo percorso così come stampati (es. 1-18 o solo dispari) — l'app calcola da sola la buca più difficile.",
+      "de": "Gib die Schlagindex-Zahlen deines Platzes genau wie gedruckt ein (z.B. 1-18 oder nur ungerade) — die App berechnet selbst, welches Loch am schwersten ist."
+    },
+    "hcp_legend": {
+      "sv": "● = extra slag på hålet för spelaren (netto-par)", "no": "● = ekstra slag på hullet for spilleren (netto-par)",
+      "da": "● = ekstra slag på hullet for spilleren (netto-par)", "fi": "● = pelaajan lisälyönti väylällä (netto-par)",
+      "is": "● = aukahögg á holunni fyrir leikmanninn (nettó-par)", "en": "● = extra stroke on the hole for the player (net par)",
+      "es": "● = golpe extra en el hoyo para el jugador (par neto)", "fr": "● = coup supplémentaire sur le trou pour le joueur (par net)",
+      "it": "● = colpo extra sulla buca per il giocatore (par netto)", "de": "● = Zusatzschlag am Loch für den Spieler (Netto-Par)"
+    },
+    "legend_birdie": {
+      "sv": "Birdie / eagle (dubbel ring)", "no": "Birdie / eagle (dobbel ring)", "da": "Birdie / eagle (dobbelt ring)",
+      "fi": "Birdie / eagle (kaksoisrengas)", "is": "Birdie / eagle (tvöfaldur hringur)", "en": "Birdie / eagle (double ring)",
+      "es": "Birdie / águila (anillo doble)", "fr": "Birdie / aigle (double anneau)", "it": "Birdie / eagle (doppio anello)",
+      "de": "Birdie / Eagle (Doppelring)"
+    },
+    "legend_par": {
+      "sv": "Par", "no": "Par", "da": "Par", "fi": "Par", "is": "Par",
+      "en": "Par", "es": "Par", "fr": "Par", "it": "Par", "de": "Par"
+    },
+    "legend_bogey": {
+      "sv": "Bogey / dubbel (dubbel ram)", "no": "Bogey / dobbel (dobbel ramme)", "da": "Bogey / dobbelt (dobbelt ramme)",
+      "fi": "Bogey / tuplabogey (kaksoiskehys)", "is": "Skolli / tvöfaldur (tvöfaldur rammi)", "en": "Bogey / double (double border)",
+      "es": "Bogey / doble (borde doble)", "fr": "Bogey / double (double contour)", "it": "Bogey / doppio (doppio bordo)",
+      "de": "Bogey / Doppel (Doppelrahmen)"
+    },
+    "confirm_new_text": {
+      "sv": "Starta ny runda? Nuvarande inmatning skrivs över (spara den first om du vill behålla den).",
+      "no": "Starte ny runde? Nåværende inntasting overskrives (lagre den først hvis du vil beholde den).",
+      "da": "Start ny runde? Nuværende indtastning overskrives (gem den først, hvis du vil beholde den).",
+      "fi": "Aloitetaanko uusi kierros? Nykyiset tiedot ylikirjoitetaan (tallenna ensin, jos haluat säilyttää ne).",
+      "is": "Byrja nýjan hring? Núverandi innsláttur verður yfirskrifaður (vistaðu hann fyrst ef þú vilt halda honum).",
+      "en": "Start a new round? Current entries will be overwritten (save first if you want to keep them).",
+      "es": "¿Empezar una nueva ronda? Los datos actuales se sobrescribirán (guárdalos antes si quieres conservarlos).",
+      "fr": "Commencer une nouvelle partie ? Les données actuelles seront écrasées (sauvegardez-les d'abord si besoin).",
+      "it": "Iniziare un nuovo giro? I dati attuali verranno sovrascritti (salvali prima se vuoi conservarli).",
+      "de": "Neue Runde starten? Aktuelle Eingaben werden überschrieben (vorher speichern, falls gewünscht)."
+    },
+    "cancel_btn": {
+      "sv": "Avbryt", "no": "Avbryt", "da": "Annuller", "fi": "Peruuta", "is": "Hætta við",
+      "en": "Cancel", "es": "Cancelar", "fr": "Annuler", "it": "Annulla", "de": "Abbrechen"
+    },
+    "confirm_new_btn": {
+      "sv": "Ja, ny runda", "no": "Ja, ny runde", "da": "Ja, ny runde", "fi": "Kyllä, uusi kierros", "is": "Já, nýr hringur",
+      "en": "Yes, new round", "es": "Sí, nueva ronda", "fr": "Oui, nouvelle partie", "it": "Sì, nuovo giro", "de": "Ja, neue Runde"
+    },
+    "confirm_clear_text": {
+      "sv": "Rensa alla inmatade slag? Spelare, klubb och HCP behålls — bara resultaten nollställs.",
+      "no": "Nullstille alle innslåtte slag? Spillere, klubb og HCP beholdes — bare resultatene nullstilles.",
+      "da": "Ryd alle indtastede slag? Spillere, klub og HCP bevares — kun resultaterne nulstilles.",
+      "fi": "Tyhjennetäänkö kaikki syötetyt lyönnit? Pelaajat, seura ja HCP säilyvät — vain tulokset nollataan.",
+      "is": "Hreinsa öll skráð högg? Leikmenn, klúbbur og forgjöf haldast — aðeins úrslitin núllstillast.",
+      "en": "Clear all entered scores? Players, club and HCP are kept — only the results are reset.",
+      "es": "¿Borrar todos los golpes introducidos? Se conservan jugadores, club y hándicap — solo se reinician los resultados.",
+      "fr": "Effacer tous les scores saisis ? Joueurs, club et index sont conservés — seuls les résultats sont réinitialisés.",
+      "it": "Cancellare tutti i colpi inseriti? Giocatori, circolo e HCP vengono mantenuti — solo i risultati vengono azzerati.",
+      "de": "Alle eingegebenen Schläge löschen? Spieler, Club und HCP bleiben erhalten — nur die Ergebnisse werden zurückgesetzt."
+    },
+    "confirm_clear_btn": {
+      "sv": "Ja, rensa", "no": "Ja, nullstill", "da": "Ja, ryd", "fi": "Kyllä, tyhjennä", "is": "Já, hreinsa",
+      "en": "Yes, clear", "es": "Sí, borrar", "fr": "Oui, effacer", "it": "Sì, cancella", "de": "Ja, löschen"
+    },
+    "new_round_btn": {
+      "sv": "Ny runda", "no": "Ny runde", "da": "Ny runde", "fi": "Uusi kierros", "is": "Nýr hringur",
+      "en": "New round", "es": "Nueva ronda", "fr": "Nouvelle partie", "it": "Nuovo giro", "de": "Neue Runde"
+    },
+    "clear_scores_btn": {
+      "sv": "Rensa resultat", "no": "Nullstill resultat", "da": "Ryd resultat", "fi": "Tyhjennä tulokset", "is": "Hreinsa úrslit",
+      "en": "Clear results", "es": "Borrar resultados", "fr": "Effacer les résultats", "it": "Cancella risultati", "de": "Ergebnisse löschen"
+    },
+    "save_history_btn": {
+      "sv": "Spara runda i historik", "no": "Lagre runde i historikk", "da": "Gem runde i historik", "fi": "Tallenna kierros historiaan", "is": "Vista hring í sögu",
+      "en": "Save round to history", "es": "Guardar ronda en historial", "fr": "Enregistrer la partie dans l'historique", "it": "Salva giro nella cronologia", "de": "Runde im Verlauf speichern"
+    },
+    "share_btn": {
+      "sv": "Dela", "no": "Del", "da": "Del", "fi": "Jaa", "is": "Deila",
+      "en": "Share", "es": "Compartir", "fr": "Partager", "it": "Condividi", "de": "Teilen"
+    },
+    "copy_log_btn": {
+      "sv": "Kopiera logg", "no": "Kopier logg", "da": "Kopiér log", "fi": "Kopioi loki", "is": "Afrita annál",
+      "en": "Copy log", "es": "Copiar registro", "fr": "Copier le journal", "it": "Copia registro", "de": "Protokoll kopieren"
+    },
+    "download_log_btn": {
+      "sv": "Ladda ner .txt", "no": "Last ned .txt", "da": "Download .txt", "fi": "Lataa .txt", "is": "Sækja .txt",
+      "en": "Download .txt", "es": "Descargar .txt", "fr": "Télécharger .txt", "it": "Scarica .txt", "de": ".txt herunterladen"
+    },
+    "log_panel_title": {
+      "sv": "Textlogg (förhandsvisning)", "no": "Tekstlogg (forhåndsvisning)", "da": "Tekstlog (forhåndsvisning)",
+      "fi": "Tekstiloki (esikatselu)", "is": "Textaannáll (forskoðun)", "en": "Text log (preview)",
+      "es": "Registro de texto (vista previa)", "fr": "Journal texte (aperçu)", "it": "Registro testuale (anteprima)", "de": "Textprotokoll (Vorschau)"
+    },
+    "stats_panel_title": {
+      "sv": "Statistik", "no": "Statistikk", "da": "Statistik", "fi": "Tilastot", "is": "Tölfræði",
+      "en": "Stats", "es": "Estadísticas", "fr": "Statistiques", "it": "Statistiche", "de": "Statistik"
+    },
+    "stats_empty": {
+      "sv": "Spara några rundor för att se statistik.", "no": "Lagre noen runder for å se statistikk.",
+      "da": "Gem nogle runder for at se statistik.", "fi": "Tallenna muutama kierros nähdäksesi tilastot.",
+      "is": "Vistaðu nokkra hringi til að sjá tölfræði.", "en": "Save a few rounds to see stats.",
+      "es": "Guarda algunas rondas para ver estadísticas.", "fr": "Enregistrez quelques parties pour voir les statistiques.",
+      "it": "Salva alcuni giri per vedere le statistiche.", "de": "Speichere ein paar Runden, um Statistiken zu sehen."
+    },
+    "season_stats_title": {
+      "sv": "Säsongen i siffror", "no": "Sesongen i tall", "da": "Sæsonen i tal", "fi": "Kausi lukuina", "is": "Tímabilið í tölum",
+      "en": "The season in numbers", "es": "La temporada en cifras", "fr": "La saison en chiffres", "it": "La stagione in numeri", "de": "Die Saison in Zahlen"
+    },
+    "trend_chart_title": {
+      "sv": "Resultat mot par per runda", "no": "Resultat mot par per runde", "da": "Resultat mod par pr. runde",
+      "fi": "Tulos parin suhteen kierroksittain", "is": "Árangur miðað við par eftir hring", "en": "Score vs. par per round",
+      "es": "Resultado contra par por ronda", "fr": "Score par rapport au par par partie", "it": "Punteggio rispetto al par per giro",
+      "de": "Ergebnis gegen Par pro Runde"
+    },
+    "course_chart_title": {
+      "sv": "Snittresultat per klubb", "no": "Gjennomsnittsresultat per klubb", "da": "Gennemsnitsresultat pr. klub",
+      "fi": "Keskitulos seuraa kohden", "is": "Meðalárangur eftir klúbbi", "en": "Average score per club",
+      "es": "Resultado medio por club", "fr": "Score moyen par club", "it": "Punteggio medio per circolo", "de": "Durchschnittsergebnis pro Club"
+    },
+    "history_panel_title": {
+      "sv": "Sparade rundor", "no": "Lagrede runder", "da": "Gemte runder", "fi": "Tallennetut kierrokset", "is": "Vistaðir hringir",
+      "en": "Saved rounds", "es": "Rondas guardadas", "fr": "Parties enregistrées", "it": "Giri salvati", "de": "Gespeicherte Runden"
+    },
+    "history_filter_label": {
+      "sv": "Visa bana", "no": "Vis bane", "da": "Vis bane", "fi": "Näytä rata", "is": "Sýna völl",
+      "en": "Show course", "es": "Mostrar campo", "fr": "Afficher le parcours", "it": "Mostra percorso", "de": "Platz anzeigen"
+    },
+    "history_empty": {
+      "sv": "Inga sparade rundor än.", "no": "Ingen lagrede runder ennå.", "da": "Ingen gemte runder endnu.",
+      "fi": "Ei vielä tallennettuja kierroksia.", "is": "Engir vistaðir hringir ennþá.", "en": "No saved rounds yet.",
+      "es": "Aún no hay rondas guardadas.", "fr": "Aucune partie enregistrée pour le moment.", "it": "Ancora nessun giro salvato.", "de": "Noch keine gespeicherten Runden."
+    },
+    "backup_panel_title": {
+      "sv": "Säkerhetskopia", "no": "Sikkerhetskopi", "da": "Sikkerhedskopi", "fi": "Varmuuskopio", "is": "Öryggisafrit",
+      "en": "Backup", "es": "Copia de seguridad", "fr": "Sauvegarde", "it": "Backup", "de": "Sicherung"
+    },
+    "backup_hint": {
+      "sv": "All data sparas bara i den här webbläsaren. Exportera regelbundet, särskilt inför att byta telefon eller rensa webbläsardata.",
+      "no": "All data lagres kun i denne nettleseren. Eksporter jevnlig, spesielt før du bytter telefon eller sletter nettleserdata.",
+      "da": "Alle data gemmes kun i denne browser. Eksportér jævnligt, især inden du skifter telefon eller rydder browserdata.",
+      "fi": "Kaikki tiedot tallennetaan vain tähän selaimeen. Vie tiedot säännöllisesti, varsinkin ennen puhelimen vaihtoa tai selaintietojen tyhjennystä.",
+      "is": "Öll gögn eru aðeins vistuð í þessum vafra. Flyttu út reglulega, sérstaklega áður en þú skiptir um síma eða hreinsar vafragögn.",
+      "en": "All data is only stored in this browser. Export regularly, especially before switching phones or clearing browser data.",
+      "es": "Todos los datos solo se guardan en este navegador. Exporta con regularidad, sobre todo antes de cambiar de teléfono o borrar datos del navegador.",
+      "fr": "Toutes les données ne sont stockées que dans ce navigateur. Exportez régulièrement, surtout avant de changer de téléphone ou d'effacer les données du navigateur.",
+      "it": "Tutti i dati sono salvati solo in questo browser. Esporta regolarmente, specialmente prima di cambiare telefono o cancellare i dati del browser.",
+      "de": "Alle Daten werden nur in diesem Browser gespeichert. Exportiere regelmäßig, besonders vor einem Telefonwechsel oder dem Löschen von Browserdaten."
+    },
+    "export_backup_btn": {
+      "sv": "Exportera säkerhetskopia", "no": "Eksporter sikkerhetskopi", "da": "Eksportér sikkerhedskopi",
+      "fi": "Vie varmuuskopio", "is": "Flytja út öryggisafrit", "en": "Export backup",
+      "es": "Exportar copia de seguridad", "fr": "Exporter la sauvegarde", "it": "Esporta backup", "de": "Sicherung exportieren"
+    },
+    "import_backup_btn": {
+      "sv": "Återställ från fil", "no": "Gjenopprett fra fil", "da": "Gendan fra fil", "fi": "Palauta tiedostosta", "is": "Endurheimta úr skrá",
+      "en": "Restore from file", "es": "Restaurar desde archivo", "fr": "Restaurer depuis un fichier", "it": "Ripristina da file", "de": "Aus Datei wiederherstellen"
+    },
+    "confirm_import_text": {
+      "sv": "Återställ från säkerhetskopia? Nuvarande historik och spelarminnen skrivs över.",
+      "no": "Gjenopprett fra sikkerhetskopi? Nåværende historikk og spillerminner overskrives.",
+      "da": "Gendan fra sikkerhedskopi? Nuværende historik og spillerhukommelse overskrives.",
+      "fi": "Palautetaanko varmuuskopiosta? Nykyinen historia ja pelaajamuisti ylikirjoitetaan.",
+      "is": "Endurheimta úr öryggisafriti? Núverandi saga og leikmannaminni verða yfirskrifuð.",
+      "en": "Restore from backup? Current history and player memory will be overwritten.",
+      "es": "¿Restaurar desde copia de seguridad? El historial y la memoria de jugadores actuales se sobrescribirán.",
+      "fr": "Restaurer depuis la sauvegarde ? L'historique et la mémoire des joueurs actuels seront écrasés.",
+      "it": "Ripristinare dal backup? La cronologia e la memoria giocatori attuali verranno sovrascritte.",
+      "de": "Aus Sicherung wiederherstellen? Aktueller Verlauf und Spielerdaten werden überschrieben."
+    },
+    "confirm_import_btn": {
+      "sv": "Ja, återställ", "no": "Ja, gjenopprett", "da": "Ja, gendan", "fi": "Kyllä, palauta", "is": "Já, endurheimta",
+      "en": "Yes, restore", "es": "Sí, restaurar", "fr": "Oui, restaurer", "it": "Sì, ripristina", "de": "Ja, wiederherstellen"
+    },
+    "match_done_title": {
+      "sv": "Match klar!", "no": "Runde ferdig!", "da": "Runde færdig!", "fi": "Kierros valmis!", "is": "Hringur búinn!",
+      "en": "Round complete!", "es": "¡Ronda terminada!", "fr": "Partie terminée !", "it": "Giro completato!", "de": "Runde beendet!"
+    },
+    "summary_save_btn": {
+      "sv": "Spara & stäng", "no": "Lagre og lukk", "da": "Gem og luk", "fi": "Tallenna ja sulje", "is": "Vista og loka",
+      "en": "Save & close", "es": "Guardar y cerrar", "fr": "Enregistrer et fermer", "it": "Salva e chiudi", "de": "Speichern & schließen"
+    },
+    "theme_toggle_title": {
+      "sv": "Mörkt/ljust tema", "no": "Mørkt/lyst tema", "da": "Mørkt/lyst tema", "fi": "Tumma/vaalea teema", "is": "Dökkt/ljóst þema",
+      "en": "Dark/light theme", "es": "Tema oscuro/claro", "fr": "Thème sombre/clair", "it": "Tema scuro/chiaro", "de": "Dunkles/helles Thema"
+    },
+    "sound_toggle_title": {
+      "sv": "Ljud vid birdie/bogey av/på", "no": "Lyd ved birdie/bogey av/på", "da": "Lyd ved birdie/bogey til/fra",
+      "fi": "Ääni birdiestä/bogeysta päälle/pois", "is": "Hljóð við birdie/skolla af/á", "en": "Birdie/bogey sound on/off",
+      "es": "Sonido birdie/bogey activado/desactivado", "fr": "Son birdie/bogey activé/désactivé", "it": "Suono birdie/bogey attivo/disattivo",
+      "de": "Birdie/Bogey-Ton ein/aus"
+    },
+    "lang_toggle_title": {
+      "sv": "Språk", "no": "Språk", "da": "Sprog", "fi": "Kieli", "is": "Tungumál",
+      "en": "Language", "es": "Idioma", "fr": "Langue", "it": "Lingua", "de": "Sprache"
+    },
+    "season_rounds": {
+      "sv": "Sparade rundor", "no": "Lagrede runder", "da": "Gemte runder", "fi": "Tallennetut kierrokset", "is": "Vistaðir hringir",
+      "en": "Saved rounds", "es": "Rondas guardadas", "fr": "Parties enregistrées", "it": "Giri salvati", "de": "Gespeicherte Runden"
+    },
+    "season_avg": {
+      "sv": "Snitt mot par / runda", "no": "Snitt mot par / runde", "da": "Snit mod par / runde", "fi": "Keskiarvo parista / kierros",
+      "is": "Meðaltal miðað við par / hring", "en": "Avg. vs. par / round", "es": "Media vs. par / ronda", "fr": "Moy. vs par / partie",
+      "it": "Media vs par / giro", "de": "Schnitt vs. Par / Runde"
+    },
+    "season_best": {
+      "sv": "Bästa runda", "no": "Beste runde", "da": "Bedste runde", "fi": "Paras kierros", "is": "Besti hringur",
+      "en": "Best round", "es": "Mejor ronda", "fr": "Meilleure partie", "it": "Miglior giro", "de": "Beste Runde"
+    },
+    "season_birdies": {
+      "sv": "Birdies eller bättre", "no": "Birdies eller bedre", "da": "Birdies eller bedre", "fi": "Birdiet tai paremmat", "is": "Birdie eða betra",
+      "en": "Birdies or better", "es": "Birdies o mejor", "fr": "Birdies ou mieux", "it": "Birdie o migliori", "de": "Birdies oder besser"
+    },
+    "season_holes_played": {
+      "sv": "hål spelade", "no": "hull spilt", "da": "huller spillet", "fi": "väylää pelattu", "is": "holur leiknar",
+      "en": "holes played", "es": "hoyos jugados", "fr": "trous joués", "it": "buche giocate", "de": "gespielte Löcher"
+    },
+    "toast_hcp_autofilled": {
+      "sv": "HCP ifyllt automatiskt för {name}", "no": "HCP fylt ut automatisk for {name}", "da": "HCP udfyldt automatisk for {name}",
+      "fi": "HCP täytetty automaattisesti pelaajalle {name}", "is": "Forgjöf fyllt sjálfkrafa út fyrir {name}",
+      "en": "HCP auto-filled for {name}", "es": "Hándicap rellenado automáticamente para {name}",
+      "fr": "Index auto-rempli pour {name}", "it": "HCP compilato automaticamente per {name}", "de": "HCP automatisch ausgefüllt für {name}"
+    },
+    "toast_player_removed": {
+      "sv": "Spelare borttagen", "no": "Spiller fjernet", "da": "Spiller fjernet", "fi": "Pelaaja poistettu", "is": "Leikmaður fjarlægður",
+      "en": "Player removed", "es": "Jugador eliminado", "fr": "Joueur supprimé", "it": "Giocatore rimosso", "de": "Spieler entfernt"
+    },
+    "toast_no_slope_table": {
+      "sv": "Ingen slopetabell känd för \"{club}\"", "no": "Ingen slopetabell kjent for \"{club}\"", "da": "Ingen slopetabel kendt for \"{club}\"",
+      "fi": "Ei tunnettua slope-taulukkoa seuralle \"{club}\"", "is": "Engin hallatafla þekkt fyrir \"{club}\"",
+      "en": "No slope table known for \"{club}\"", "es": "No hay tabla de slope conocida para \"{club}\"",
+      "fr": "Aucune table de slope connue pour « {club} »", "it": "Nessuna tabella slope nota per \"{club}\"", "de": "Keine Slope-Tabelle bekannt für „{club}“"
+    },
+    "toast_select_gender": {
+      "sv": "Välj kön för spelaren först", "no": "Velg kjønn for spilleren først", "da": "Vælg køn for spilleren først",
+      "fi": "Valitse pelaajan sukupuoli ensin", "is": "Veldu kyn leikmannsins fyrst", "en": "Select the player's sex first",
+      "es": "Selecciona primero el sexo del jugador", "fr": "Sélectionnez d'abord le sexe du joueur", "it": "Seleziona prima il sesso del giocatore",
+      "de": "Wähle zuerst das Geschlecht des Spielers"
+    },
+    "toast_fill_hcp": {
+      "sv": "Fyll i HCP för spelaren först", "no": "Fyll inn HCP for spilleren først", "da": "Udfyld HCP for spilleren først",
+      "fi": "Täytä pelaajan HCP ensin", "is": "Fylltu út forgjöf leikmannsins fyrst", "en": "Enter the player's HCP first",
+      "es": "Introduce primero el hándicap del jugador", "fr": "Renseignez d'abord l'index du joueur", "it": "Inserisci prima l'HCP del giocatore",
+      "de": "Zuerst das HCP des Spielers eingeben"
+    },
+    "toast_no_verified_data": {
+      "sv": "Verifierad slopedata saknas för {gender} på den här banan", "no": "Verifisert slopedata mangler for {gender} på denne banen",
+      "da": "Verificeret slopedata mangler for {gender} på denne bane", "fi": "Vahvistettua slope-dataa ei ole {gender} tälle radalle",
+      "is": "Staðfest hallagögn vantar fyrir {gender} á þessum velli", "en": "Verified slope data is missing for {gender} on this course",
+      "es": "Faltan datos de slope verificados para {gender} en este campo", "fr": "Données de slope vérifiées manquantes pour {gender} sur ce parcours",
+      "it": "Mancano dati slope verificati per {gender} su questo percorso", "de": "Verifizierte Slope-Daten fehlen für {gender} auf diesem Platz"
+    },
+    "gender_men_word": {
+      "sv": "herrar", "no": "herrer", "da": "herrer", "fi": "miehet", "is": "karla",
+      "en": "men", "es": "hombres", "fr": "hommes", "it": "uomini", "de": "Herren"
+    },
+    "gender_women_word": {
+      "sv": "damer", "no": "damer", "da": "damer", "fi": "naiset", "is": "konur",
+      "en": "women", "es": "mujeres", "fr": "femmes", "it": "donne", "de": "Damen"
+    },
+    "toast_cant_parse_hcp": {
+      "sv": "Kunde inte tolka HCP-värdet", "no": "Kunne ikke tolke HCP-verdien", "da": "Kunne ikke fortolke HCP-værdien",
+      "fi": "HCP-arvoa ei voitu tulkita", "is": "Ekki tókst að lesa forgjafargildið", "en": "Couldn't read the HCP value",
+      "es": "No se pudo interpretar el valor del hándicap", "fr": "Impossible d'interpréter la valeur d'index", "it": "Impossibile interpretare il valore HCP",
+      "de": "HCP-Wert konnte nicht gelesen werden"
+    },
+    "toast_extra_calculated": {
+      "sv": "Extraslag uträknat: {result} ({course})", "no": "Ekstraslag beregnet: {result} ({course})", "da": "Ekstraslag beregnet: {result} ({course})",
+      "fi": "Lisälyönnit laskettu: {result} ({course})", "is": "Aukahögg reiknuð: {result} ({course})",
+      "en": "Extra strokes calculated: {result} ({course})", "es": "Golpes extra calculados: {result} ({course})",
+      "fr": "Coups supplémentaires calculés : {result} ({course})", "it": "Colpi extra calcolati: {result} ({course})",
+      "de": "Zusatzschläge berechnet: {result} ({course})"
+    },
+    "toast_copied": {
+      "sv": "Kopierat till urklipp", "no": "Kopiert til utklippstavlen", "da": "Kopieret til udklipsholder", "fi": "Kopioitu leikepöydälle",
+      "is": "Afritað á klippiborð", "en": "Copied to clipboard", "es": "Copiado al portapapeles", "fr": "Copié dans le presse-papiers",
+      "it": "Copiato negli appunti", "de": "In die Zwischenablage kopiert"
+    },
+    "toast_copy_failed": {
+      "sv": "Kunde inte kopiera", "no": "Kunne ikke kopiere", "da": "Kunne ikke kopiere", "fi": "Kopiointi epäonnistui", "is": "Ekki tókst að afrita",
+      "en": "Couldn't copy", "es": "No se pudo copiar", "fr": "Impossible de copier", "it": "Impossibile copiare", "de": "Kopieren fehlgeschlagen"
+    },
+    "toast_stroke_index_filled": {
+      "sv": "Slagindex ifyllt för {course}", "no": "Slagindeks fylt ut for {course}", "da": "Slagindeks udfyldt for {course}",
+      "fi": "Lyöntitasoitus täytetty radalle {course}", "is": "Höggvísitala fyllt út fyrir {course}", "en": "Stroke index filled in for {course}",
+      "es": "Índice de golpe rellenado para {course}", "fr": "Index de trou rempli pour {course}", "it": "Indice colpo compilato per {course}",
+      "de": "Schlagindex ausgefüllt für {course}"
+    },
+    "toast_course_and_holes_filled": {
+      "sv": "{course} ifyllt — bytte till {holes} hål med rätt par/index",
+      "no": "{course} fylt ut — byttet til {holes} hull med riktig par/indeks",
+      "da": "{course} udfyldt — skiftede til {holes} huller med korrekt par/indeks",
+      "fi": "{course} täytetty — vaihdettiin {holes} väylään oikealla par/indeksillä",
+      "is": "{course} fyllt út — skipt í {holes} holur með réttu pari/vísitölu",
+      "en": "{course} filled in — switched to {holes} holes with correct par/index",
+      "es": "{course} rellenado — se cambió a {holes} hoyos con par/índice correctos",
+      "fr": "{course} renseigné — passage à {holes} trous avec par/index corrects",
+      "it": "{course} compilato — passato a {holes} buche con par/indice corretti",
+      "de": "{course} ausgefüllt — auf {holes} Löcher mit korrektem Par/Index umgestellt"
+    },
+    "toast_no_club_found": {
+      "sv": "Ingen klubb hittades i närheten", "no": "Ingen klubb funnet i nærheten", "da": "Ingen klub fundet i nærheden",
+      "fi": "Lähellä ei löytynyt seuraa", "is": "Enginn klúbbur fannst í nágrenninu", "en": "No club found nearby",
+      "es": "No se encontró ningún club cercano", "fr": "Aucun club trouvé à proximité", "it": "Nessun circolo trovato nelle vicinanze",
+      "de": "Kein Club in der Nähe gefunden"
+    },
+    "toast_locate_failed": {
+      "sv": "Kunde inte hitta klubbar automatiskt", "no": "Kunne ikke finne klubber automatisk", "da": "Kunne ikke finde klubber automatisk",
+      "fi": "Seuroja ei voitu hakea automaattisesti", "is": "Ekki tókst að finna klúbba sjálfkrafa", "en": "Couldn't find clubs automatically",
+      "es": "No se pudieron encontrar clubes automáticamente", "fr": "Impossible de trouver des clubs automatiquement",
+      "it": "Impossibile trovare circoli automaticamente", "de": "Clubs konnten nicht automatisch gefunden werden"
+    },
+    "toast_club_filled": {
+      "sv": "Klubb ifylld: {club}", "no": "Klubb fylt ut: {club}", "da": "Klub udfyldt: {club}", "fi": "Seura täytetty: {club}",
+      "is": "Klúbbur fylltur út: {club}", "en": "Club filled in: {club}", "es": "Club rellenado: {club}", "fr": "Club renseigné : {club}",
+      "it": "Circolo compilato: {club}", "de": "Club eingetragen: {club}"
+    },
+    "toast_club_and_index_filled": {
+      "sv": "Klubb & slagindex ifyllt: {club}", "no": "Klubb og slagindeks fylt ut: {club}", "da": "Klub og slagindeks udfyldt: {club}",
+      "fi": "Seura ja lyöntitasoitus täytetty: {club}", "is": "Klúbbur og höggvísitala fyllt út: {club}",
+      "en": "Club & stroke index filled in: {club}", "es": "Club e índice de golpe rellenados: {club}",
+      "fr": "Club et index de trou renseignés : {club}", "it": "Circolo e indice colpo compilati: {club}", "de": "Club & Schlagindex eingetragen: {club}"
+    },
+    "toast_player_added": {
+      "sv": "Spelare tillagd", "no": "Spiller lagt til", "da": "Spiller tilføjet", "fi": "Pelaaja lisätty", "is": "Leikmanni bætt við",
+      "en": "Player added", "es": "Jugador añadido", "fr": "Joueur ajouté", "it": "Giocatore aggiunto", "de": "Spieler hinzugefügt"
+    },
+    "toast_new_round_started": {
+      "sv": "Ny runda startad", "no": "Ny runde startet", "da": "Ny runde startet", "fi": "Uusi kierros aloitettu", "is": "Nýr hringur hafinn",
+      "en": "New round started", "es": "Nueva ronda iniciada", "fr": "Nouvelle partie commencée", "it": "Nuovo giro iniziato", "de": "Neue Runde gestartet"
+    },
+    "toast_scores_cleared": {
+      "sv": "Resultat rensade", "no": "Resultater nullstilt", "da": "Resultater ryddet", "fi": "Tulokset tyhjennetty", "is": "Úrslit hreinsuð",
+      "en": "Results cleared", "es": "Resultados borrados", "fr": "Résultats effacés", "it": "Risultati cancellati", "de": "Ergebnisse gelöscht"
+    },
+    "toast_round_saved": {
+      "sv": "Runda sparad i historik", "no": "Runde lagret i historikk", "da": "Runde gemt i historik", "fi": "Kierros tallennettu historiaan",
+      "is": "Hringur vistaður í sögu", "en": "Round saved to history", "es": "Ronda guardada en historial", "fr": "Partie enregistrée dans l'historique",
+      "it": "Giro salvato nella cronologia", "de": "Runde im Verlauf gespeichert"
+    },
+    "toast_share_unsupported": {
+      "sv": "Delning stöds inte här — loggen kopierad istället", "no": "Deling støttes ikke her — loggen kopiert i stedet",
+      "da": "Deling understøttes ikke her — loggen kopieret i stedet", "fi": "Jakaminen ei tuettu tässä — loki kopioitiin sen sijaan",
+      "is": "Deiling er ekki studd hér — annállinn afritaður í staðinn", "en": "Sharing isn't supported here — the log was copied instead",
+      "es": "Aquí no se admite compartir; en su lugar se copió el registro", "fr": "Le partage n'est pas pris en charge ici — le journal a été copié à la place",
+      "it": "La condivisione non è supportata qui — il registro è stato copiato", "de": "Teilen wird hier nicht unterstützt — das Protokoll wurde stattdessen kopiert"
+    },
+    "toast_share_failed": {
+      "sv": "Kunde inte dela — loggen kopierad istället", "no": "Kunne ikke dele — loggen kopiert i stedet",
+      "da": "Kunne ikke dele — loggen kopieret i stedet", "fi": "Jakaminen epäonnistui — loki kopioitiin sen sijaan",
+      "is": "Ekki tókst að deila — annállinn afritaður í staðinn", "en": "Couldn't share — the log was copied instead",
+      "es": "No se pudo compartir; en su lugar se copió el registro", "fr": "Impossible de partager — le journal a été copié à la place",
+      "it": "Impossibile condividere — il registro è stato copiato", "de": "Teilen fehlgeschlagen — das Protokoll wurde stattdessen kopiert"
+    },
+    "toast_sound_on": {
+      "sv": "Ljud vid birdie/bogey på", "no": "Lyd ved birdie/bogey på", "da": "Lyd ved birdie/bogey til", "fi": "Ääni birdiestä/bogeysta päällä",
+      "is": "Hljóð við birdie/skolla á", "en": "Birdie/bogey sound on", "es": "Sonido birdie/bogey activado", "fr": "Son birdie/bogey activé",
+      "it": "Suono birdie/bogey attivo", "de": "Birdie/Bogey-Ton an"
+    },
+    "toast_sound_off": {
+      "sv": "Ljud vid birdie/bogey av", "no": "Lyd ved birdie/bogey av", "da": "Lyd ved birdie/bogey fra", "fi": "Ääni birdiestä/bogeysta pois",
+      "is": "Hljóð við birdie/skolla af", "en": "Birdie/bogey sound off", "es": "Sonido birdie/bogey desactivado", "fr": "Son birdie/bogey désactivé",
+      "it": "Suono birdie/bogey disattivo", "de": "Birdie/Bogey-Ton aus"
+    },
+    "toast_backup_downloaded": {
+      "sv": "Säkerhetskopia nedladdad", "no": "Sikkerhetskopi lastet ned", "da": "Sikkerhedskopi downloadet", "fi": "Varmuuskopio ladattu",
+      "is": "Öryggisafrit sótt", "en": "Backup downloaded", "es": "Copia de seguridad descargada", "fr": "Sauvegarde téléchargée",
+      "it": "Backup scaricato", "de": "Sicherung heruntergeladen"
+    },
+    "toast_backup_invalid_file": {
+      "sv": "Filen kunde inte läsas — är det en giltig säkerhetskopia?", "no": "Filen kunne ikke leses — er det en gyldig sikkerhetskopi?",
+      "da": "Filen kunne ikke læses — er det en gyldig sikkerhedskopi?", "fi": "Tiedostoa ei voitu lukea — onko se kelvollinen varmuuskopio?",
+      "is": "Ekki tókst að lesa skrána — er þetta gilt öryggisafrit?", "en": "The file couldn't be read — is it a valid backup?",
+      "es": "No se pudo leer el archivo; ¿es una copia de seguridad válida?", "fr": "Le fichier n'a pas pu être lu — s'agit-il d'une sauvegarde valide ?",
+      "it": "Impossibile leggere il file — è un backup valido?", "de": "Datei konnte nicht gelesen werden — ist es eine gültige Sicherung?"
+    },
+    "toast_backup_not_recognized": {
+      "sv": "Filen ser inte ut som en säkerhetskopia från appen", "no": "Filen ser ikke ut som en sikkerhetskopi fra appen",
+      "da": "Filen ligner ikke en sikkerhedskopi fra appen", "fi": "Tiedosto ei näytä sovelluksen varmuuskopiolta",
+      "is": "Skráin lítur ekki út eins og öryggisafrit úr forritinu", "en": "This file doesn't look like a backup from the app",
+      "es": "Este archivo no parece una copia de seguridad de la app", "fr": "Ce fichier ne ressemble pas à une sauvegarde de l'appli",
+      "it": "Questo file non sembra un backup dell'app", "de": "Diese Datei sieht nicht wie eine Sicherung der App aus"
+    },
+    "toast_backup_read_failed": {
+      "sv": "Kunde inte läsa filen", "no": "Kunne ikke lese filen", "da": "Kunne ikke læse filen", "fi": "Tiedostoa ei voitu lukea",
+      "is": "Ekki tókst að lesa skrána", "en": "Couldn't read the file", "es": "No se pudo leer el archivo", "fr": "Impossible de lire le fichier",
+      "it": "Impossibile leggere il file", "de": "Datei konnte nicht gelesen werden"
+    },
+    "toast_backup_restored": {
+      "sv": "Säkerhetskopia återställd", "no": "Sikkerhetskopi gjenopprettet", "da": "Sikkerhedskopi gendannet", "fi": "Varmuuskopio palautettu",
+      "is": "Öryggisafrit endurheimt", "en": "Backup restored", "es": "Copia de seguridad restaurada", "fr": "Sauvegarde restaurée",
+      "it": "Backup ripristinato", "de": "Sicherung wiederhergestellt"
+    },
+    "leader_even": {
+      "sv": "Jämnt läge — alla på {diff} (efter {holes} hål)", "no": "Jevnt løp — alle på {diff} (etter {holes} hull)",
+      "da": "Jævnt løb — alle på {diff} (efter {holes} huller)", "fi": "Tasapeli — kaikki tasoilla {diff} ({holes} väylän jälkeen)",
+      "is": "Jafnt — allir á {diff} (eftir {holes} holur)", "en": "All tied — everyone at {diff} (after {holes} holes)",
+      "es": "Empate — todos en {diff} (tras {holes} hoyos)", "fr": "Égalité — tous à {diff} (après {holes} trous)",
+      "it": "Parità — tutti a {diff} (dopo {holes} buche)", "de": "Gleichstand — alle bei {diff} (nach {holes} Löchern)"
+    },
+    "leader_shared": {
+      "sv": "Delad ledning: {names} ({diff})", "no": "Delt ledelse: {names} ({diff})", "da": "Delt føring: {names} ({diff})",
+      "fi": "Jaettu johto: {names} ({diff})", "is": "Deilt forysta: {names} ({diff})", "en": "Shared lead: {names} ({diff})",
+      "es": "Liderato compartido: {names} ({diff})", "fr": "Tête partagée : {names} ({diff})", "it": "Testa condivisa: {names} ({diff})",
+      "de": "Geteilte Führung: {names} ({diff})"
+    },
+    "leader_single": {
+      "sv": "{name} leder ({diff}, efter {holes} hål)", "no": "{name} leder ({diff}, etter {holes} hull)",
+      "da": "{name} fører ({diff}, efter {holes} huller)", "fi": "{name} johtaa ({diff}, {holes} väylän jälkeen)",
+      "is": "{name} er í forystu ({diff}, eftir {holes} holur)", "en": "{name} leads ({diff}, after {holes} holes)",
+      "es": "{name} lidera ({diff}, tras {holes} hoyos)", "fr": "{name} mène ({diff}, après {holes} trous)",
+      "it": "{name} è in testa ({diff}, dopo {holes} buche)", "de": "{name} führt ({diff}, nach {holes} Löchern)"
+    },
+    "summary_incomplete_warning": {
+      "sv": "Obs: inte alla hål är ifyllda än — sparar det du hunnit mata in.", "no": "Obs: ikke alle hull er fylt ut ennå — lagrer det du har rukket å fylle inn.",
+      "da": "Bemærk: ikke alle huller er udfyldt endnu — gemmer det du har nået at indtaste.",
+      "fi": "Huom: kaikkia väyliä ei ole vielä täytetty — tallennetaan se, mitä ehdit syöttää.",
+      "is": "Athugið: ekki allar holur eru fylltar út enn — vistar það sem þú náðir að slá inn.",
+      "en": "Note: not all holes are filled in yet — saving what you've entered so far.",
+      "es": "Nota: aún no se han rellenado todos los hoyos — se guardará lo introducido hasta ahora.",
+      "fr": "Remarque : tous les trous ne sont pas encore remplis — enregistrement de ce qui a été saisi jusqu'à présent.",
+      "it": "Nota: non tutte le buche sono ancora compilate — verrà salvato ciò che hai inserito finora.",
+      "de": "Hinweis: Noch nicht alle Löcher sind ausgefüllt — es wird gespeichert, was bisher eingegeben wurde."
+    },
+    "summary_no_result": {
+      "sv": "Inget resultat", "no": "Ingen resultat", "da": "Intet resultat", "fi": "Ei tulosta", "is": "Engin úrslit",
+      "en": "No result", "es": "Sin resultado", "fr": "Aucun résultat", "it": "Nessun risultato", "de": "Kein Ergebnis"
+    },
+    "summary_strokes_suffix": {
+      "sv": "slag", "no": "slag", "da": "slag", "fi": "lyöntiä", "is": "högg",
+      "en": "strokes", "es": "golpes", "fr": "coups", "it": "colpi", "de": "Schläge"
+    },
+    "netto_label": {
+      "sv": "Netto", "no": "Netto", "da": "Netto", "fi": "Netto", "is": "Nettó",
+      "en": "Net", "es": "Neto", "fr": "Net", "it": "Netto", "de": "Netto"
+    },
+    "map_guide_title": {
+      "sv": "Banguide", "no": "Baneguide", "da": "Baneguide", "fi": "Rataopas", "is": "Vallarleiðsögn",
+      "en": "Course guide", "es": "Guía del campo", "fr": "Guide du parcours", "it": "Guida al percorso", "de": "Platzführer"
+    },
+    "map_hole_label": {
+      "sv": "Hål", "no": "Hull", "da": "Hul", "fi": "Väylä", "is": "Hola",
+      "en": "Hole", "es": "Hoyo", "fr": "Trou", "it": "Buca", "de": "Loch"
+    },
+    "scoring_mode_label": {
+      "sv": "Spelform", "no": "Spilleform", "da": "Spilleform", "fi": "Pelimuoto", "is": "Leikform",
+      "en": "Scoring", "es": "Modalidad", "fr": "Formule de jeu", "it": "Formula di gioco", "de": "Spielform"
+    },
+    "scoring_stroke": {
+      "sv": "Slagspel", "no": "Slagspill", "da": "Slagspil", "fi": "Lyöntipeli", "is": "Höggleikur",
+      "en": "Stroke play", "es": "Juego por golpes", "fr": "Stroke play", "it": "Stroke play", "de": "Zählspiel"
+    },
+    "scoring_stableford": {
+      "sv": "Poängbogey", "no": "Poengbogey", "da": "Pointbogey", "fi": "Pistebogey", "is": "Stigaskor",
+      "en": "Stableford", "es": "Stableford", "fr": "Stableford", "it": "Stableford", "de": "Stableford"
+    },
+    "points_suffix": {
+      "sv": "poäng", "no": "poeng", "da": "point", "fi": "pistettä", "is": "stig",
+      "en": "points", "es": "puntos", "fr": "points", "it": "punti", "de": "Punkte"
+    },
+    "points_short": {
+      "sv": "p", "no": "p", "da": "p", "fi": "p", "is": "s",
+      "en": "pts", "es": "pts", "fr": "pts", "it": "pt", "de": "Pkt"
+    },
+    "points_th": {
+      "sv": "Poäng", "no": "Poeng", "da": "Point", "fi": "Pisteet", "is": "Stig",
+      "en": "Points", "es": "Puntos", "fr": "Points", "it": "Punti", "de": "Punkte"
+    },
+    "player_n": {
+      "sv": "Spelare {n}", "no": "Spiller {n}", "da": "Spiller {n}", "fi": "Pelaaja {n}", "is": "Leikmaður {n}",
+      "en": "Player {n}", "es": "Jugador {n}", "fr": "Joueur {n}", "it": "Giocatore {n}", "de": "Spieler {n}"
+    },
+    "holes_toggle_label": {
+      "sv": "Rundlängd", "no": "Runde­lengde", "da": "Runde­længde", "fi": "Kierroksen pituus", "is": "Lengd hrings",
+      "en": "Round length", "es": "Duración de la ronda", "fr": "Longueur du parcours", "it": "Lunghezza del giro", "de": "Rundenlänge"
+    },
+    "holes_9": {
+      "sv": "9 hål", "no": "9 hull", "da": "9 huller", "fi": "9 väylää", "is": "9 holur",
+      "en": "9 holes", "es": "9 hoyos", "fr": "9 trous", "it": "9 buche", "de": "9 Löcher"
+    },
+    "holes_18": {
+      "sv": "18 hål", "no": "18 hull", "da": "18 huller", "fi": "18 väylää", "is": "18 holur",
+      "en": "18 holes", "es": "18 hoyos", "fr": "18 trous", "it": "18 buche", "de": "18 Löcher"
+    },
+    "confirm_holes_switch": {
+      "sv": "Byta rundlängd? Nuvarande inmatning skrivs över (spara den först om du vill behålla den).",
+      "no": "Bytte rundelengde? Nåværende inntasting overskrives (lagre den først hvis du vil beholde den).",
+      "da": "Skift rundelængde? Nuværende indtastning overskrives (gem den først, hvis du vil beholde den).",
+      "fi": "Vaihdetaanko kierroksen pituutta? Nykyiset tiedot ylikirjoitetaan (tallenna ensin, jos haluat säilyttää ne).",
+      "is": "Skipta um lengd hrings? Núverandi innsláttur verður yfirskrifaður (vistaðu hann fyrst ef þú vilt halda honum).",
+      "en": "Switch round length? Current entries will be overwritten (save first if you want to keep them).",
+      "es": "¿Cambiar la duración de la ronda? Los datos actuales se sobrescribirán (guárdalos antes si quieres conservarlos).",
+      "fr": "Changer la longueur du parcours ? Les données actuelles seront écrasées (sauvegardez-les d'abord si besoin).",
+      "it": "Cambiare la lunghezza del giro? I dati attuali verranno sovrascritti (salvali prima se vuoi conservarli).",
+      "de": "Rundenlänge wechseln? Aktuelle Eingaben werden überschrieben (vorher speichern, falls gewünscht)."
+    },
+    "filter_all_courses": {
+      "sv": "Alla banor", "no": "Alle baner", "da": "Alle baner", "fi": "Kaikki radat", "is": "Allir vellir",
+      "en": "All courses", "es": "Todos los campos", "fr": "Tous les parcours", "it": "Tutti i percorsi", "de": "Alle Plätze"
+    },
+    "unknown_club": {
+      "sv": "Okänd klubb", "no": "Ukjent klubb", "da": "Ukendt klub", "fi": "Tuntematon seura", "is": "Óþekktur klúbbur",
+      "en": "Unknown club", "es": "Club desconocido", "fr": "Club inconnu", "it": "Circolo sconosciuto", "de": "Unbekannter Club"
+    },
+    "geo_not_supported": {
+      "sv": "Platstjänster stöds inte i den här webbläsaren.", "no": "Posisjonstjenester støttes ikke i denne nettleseren.",
+      "da": "Placeringstjenester understøttes ikke i denne browser.", "fi": "Tämä selain ei tue sijaintipalveluja.",
+      "is": "Staðsetningarþjónusta er ekki studd í þessum vafra.", "en": "Location services aren't supported in this browser.",
+      "es": "Los servicios de ubicación no son compatibles con este navegador.", "fr": "Les services de localisation ne sont pas pris en charge par ce navigateur.",
+      "it": "I servizi di localizzazione non sono supportati in questo browser.", "de": "Standortdienste werden von diesem Browser nicht unterstützt."
+    },
+    "geo_fetching_position": {
+      "sv": "Hämtar din position …", "no": "Henter posisjonen din …", "da": "Henter din placering …", "fi": "Haetaan sijaintiasi …",
+      "is": "Sæki staðsetningu þína …", "en": "Getting your location …", "es": "Obteniendo tu ubicación…", "fr": "Récupération de votre position…",
+      "it": "Recupero della tua posizione…", "de": "Standort wird ermittelt …"
+    },
+    "geo_searching_clubs": {
+      "sv": "Söker golfklubbar i närheten …", "no": "Søker etter golfklubber i nærheten …", "da": "Søger efter golfklubber i nærheden …",
+      "fi": "Etsitään lähellä olevia golfseuroja …", "is": "Leita að golfklúbbum í nágrenninu …", "en": "Searching for nearby golf clubs …",
+      "es": "Buscando clubes de golf cercanos…", "fr": "Recherche de clubs de golf à proximité…", "it": "Ricerca circoli di golf nelle vicinanze…",
+      "de": "Golfclubs in der Nähe werden gesucht …"
+    },
+    "geo_could_not_fetch": {
+      "sv": "Kunde inte hämta position.", "no": "Kunne ikke hente posisjon.", "da": "Kunne ikke hente placering.", "fi": "Sijaintia ei voitu hakea.",
+      "is": "Ekki tókst að sækja staðsetningu.", "en": "Couldn't get your location.", "es": "No se pudo obtener la ubicación.",
+      "fr": "Impossible d'obtenir la position.", "it": "Impossibile recuperare la posizione.", "de": "Standort konnte nicht ermittelt werden."
+    },
+    "geo_lookup_failed": {
+      "sv": "Uppslagstjänsten svarade inte just nu — testa igen om en stund.",
+      "no": "Oppslagstjenesten svarte ikke akkurat nå — prøv igjen om en stund.",
+      "da": "Opslagstjenesten svarede ikke lige nu — prøv igen om lidt.",
+      "fi": "Hakupalvelu ei vastannut juuri nyt — yritä uudelleen hetken kuluttua.",
+      "is": "Uppflettiþjónustan svaraði ekki núna — reyndu aftur eftir smá stund.",
+      "en": "The lookup service didn't respond right now — try again in a moment.",
+      "es": "El servicio de búsqueda no respondió ahora mismo — inténtalo de nuevo en un momento.",
+      "fr": "Le service de recherche n'a pas répondu pour le moment — réessayez dans un instant.",
+      "it": "Il servizio di ricerca non ha risposto in questo momento — riprova tra poco.",
+      "de": "Der Suchdienst hat gerade nicht geantwortet — versuch es gleich noch einmal."
+    },
+    "geo_could_not_determine": {
+      "sv": "Positionen kunde inte fastställas.", "no": "Posisjonen kunne ikke fastslås.", "da": "Placeringen kunne ikke bestemmes.",
+      "fi": "Sijaintia ei voitu määrittää.", "is": "Ekki tókst að ákvarða staðsetningu.", "en": "Your location couldn't be determined.",
+      "es": "No se pudo determinar la ubicación.", "fr": "Impossible de déterminer la position.", "it": "Impossibile determinare la posizione.",
+      "de": "Standort konnte nicht bestimmt werden."
+    },
+    "geo_timeout": {
+      "sv": "Det tog för lång tid att hämta positionen.", "no": "Det tok for lang tid å hente posisjonen.", "da": "Det tog for lang tid at hente placeringen.",
+      "fi": "Sijainnin hakeminen kesti liian kauan.", "is": "Það tók of langan tíma að sækja staðsetningu.", "en": "It took too long to get your location.",
+      "es": "Tardó demasiado en obtener la ubicación.", "fr": "La récupération de la position a pris trop de temps.", "it": "Il recupero della posizione ha richiesto troppo tempo.",
+      "de": "Die Standortermittlung hat zu lange gedauert."
+    },
+    "geo_selected_club": {
+      "sv": "Vald klubb: {club}", "no": "Valgt klubb: {club}", "da": "Valgt klub: {club}", "fi": "Valittu seura: {club}",
+      "is": "Valinn klúbbur: {club}", "en": "Selected club: {club}", "es": "Club seleccionado: {club}", "fr": "Club sélectionné : {club}",
+      "it": "Circolo selezionato: {club}", "de": "Ausgewählter Club: {club}"
+    },
+    "aria_player_name": {
+      "sv": "Namn spelare {n}", "no": "Navn spiller {n}", "da": "Navn spiller {n}", "fi": "Pelaajan {n} nimi", "is": "Nafn leikmanns {n}",
+      "en": "Name, player {n}", "es": "Nombre, jugador {n}", "fr": "Nom, joueur {n}", "it": "Nome, giocatore {n}", "de": "Name, Spieler {n}"
+    },
+    "aria_remove_player": {
+      "sv": "Ta bort spelare {n}", "no": "Fjern spiller {n}", "da": "Fjern spiller {n}", "fi": "Poista pelaaja {n}", "is": "Fjarlægja leikmann {n}",
+      "en": "Remove player {n}", "es": "Eliminar jugador {n}", "fr": "Supprimer le joueur {n}", "it": "Rimuovi giocatore {n}", "de": "Spieler {n} entfernen"
+    },
+    "aria_player_gender": {
+      "sv": "Kön spelare {n} (för automatisk uträkning)", "no": "Kjønn spiller {n} (for automatisk beregning)",
+      "da": "Køn spiller {n} (til automatisk beregning)", "fi": "Pelaajan {n} sukupuoli (automaattista laskentaa varten)",
+      "is": "Kyn leikmanns {n} (fyrir sjálfvirkan útreikning)", "en": "Sex, player {n} (for automatic calculation)",
+      "es": "Sexo, jugador {n} (para el cálculo automático)", "fr": "Sexe, joueur {n} (pour le calcul automatique)",
+      "it": "Sesso, giocatore {n} (per il calcolo automatico)", "de": "Geschlecht, Spieler {n} (für automatische Berechnung)"
+    },
+    "log_club_label": {
+      "sv": "Bana: ", "no": "Bane: ", "da": "Bane: ", "fi": "Rata: ", "is": "Völlur: ",
+      "en": "Course: ", "es": "Campo: ", "fr": "Parcours : ", "it": "Percorso: ", "de": "Platz: "
+    },
+    "log_date_label": {
+      "sv": "Datum: ", "no": "Dato: ", "da": "Dato: ", "fi": "Päivämäärä: ", "is": "Dagsetning: ",
+      "en": "Date: ", "es": "Fecha: ", "fr": "Date : ", "it": "Data: ", "de": "Datum: "
+    },
+    "log_hole_label": {
+      "sv": "HÅL", "no": "HULL", "da": "HUL", "fi": "VÄYLÄ", "is": "HOLA",
+      "en": "HOLE", "es": "HOYO", "fr": "TROU", "it": "BUCA", "de": "LOCH"
+    },
+    "log_total_label": {
+      "sv": "TOTALT", "no": "TOTALT", "da": "I ALT", "fi": "YHTEENSÄ", "is": "SAMTALS",
+      "en": "TOTAL", "es": "TOTAL", "fr": "TOTAL", "it": "TOTALE", "de": "GESAMT"
+    },
+    "log_vspar_label": {
+      "sv": "VS PAR", "no": "VS PAR", "da": "VS PAR", "fi": "VS PAR", "is": "VS PAR",
+      "en": "VS PAR", "es": "VS PAR", "fr": "VS PAR", "it": "VS PAR", "de": "VS PAR"
+    },
+    "log_netto_label": {
+      "sv": "NETTO", "no": "NETTO", "da": "NETTO", "fi": "NETTO", "is": "NETTÓ",
+      "en": "NET", "es": "NETO", "fr": "NET", "it": "NETTO", "de": "NETTO"
+    },
+    "log_logged_label": {
+      "sv": "Loggat: ", "no": "Logget: ", "da": "Logget: ", "fi": "Kirjattu: ", "is": "Skráð: ",
+      "en": "Logged: ", "es": "Registrado: ", "fr": "Enregistré : ", "it": "Registrato: ", "de": "Protokolliert: "
+    },
+    "coffee_footnote": {
+      "sv": "Om du gillar denna app får du gärna tacka mig med att donera en kopp kaffe :)",
+      "no": "Hvis du liker denne appen, må du gjerne takke meg med å donere en kopp kaffe :)",
+      "da": "Hvis du kan lide denne app, må du gerne takke mig med at donere en kop kaffe :)",
+      "fi": "Jos pidät tästä sovelluksesta, voit kiittää minua lahjoittamalla kupin kahvia :)",
+      "is": "Ef þér líkar þetta forrit máttu gjarnan þakka mér með því að gefa mér kaffibolla :)",
+      "en": "If you like this app, feel free to thank me with a coffee donation :)",
+      "es": "Si te gusta esta app, no dudes en agradecerme donando un café :)",
+      "fr": "Si vous aimez cette appli, n'hésitez pas à me remercier avec un café :)",
+      "it": "Se ti piace questa app, sentiti libero di ringraziarmi con una donazione per un caffè :)",
+      "de": "Wenn dir diese App gefällt, kannst du mir gerne mit einer Kaffeespende danken :)"
+    },
+    "toast_hole_in_one": {
+      "sv": "HÅL I ETT! ⛳🎉", "no": "HULL I ETT! ⛳🎉", "da": "HUL I ET! ⛳🎉", "fi": "REIKÄPALLO! ⛳🎉", "is": "HOLA Í HÖGGI! ⛳🎉",
+      "en": "HOLE IN ONE! ⛳🎉", "es": "¡HOYO EN UNO! ⛳🎉", "fr": "TROU EN UN ! ⛳🎉", "it": "BUCA IN UNO! ⛳🎉", "de": "HOLE IN ONE! ⛳🎉"
+    }
+  }
+}

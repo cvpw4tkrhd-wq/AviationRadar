@@ -1,63 +1,55 @@
-// LUFTRUM service worker — caches the app shell only.
-// Bump CACHE_NAME whenever index.html/app.js/style.css/icons change, so old
-// clients pick up the new files instead of serving a stale cached shell.
-var CACHE_NAME = 'luftrum-shell-v1';
-
-var SHELL_FILES = [
+// Enkel "app shell" cache för offline-bruk.
+// Höj CACHE_NAME (t.ex. till 'golf-scorekort-v2') när du gör en större uppdatering
+// av index.html för att tvinga fram en ny cache.
+var CACHE_NAME = 'golf-scorekort-v43';
+var APP_SHELL = [
   './',
   './index.html',
-  './style.css',
-  './app.js',
   './manifest.json',
-  './192px_icon.png',
-  './512px_icon.png'
+  './icon-192.png',
+  './icon-512.png',
+  './courses.json',
+  './i18n.json'
 ];
 
-self.addEventListener('install', function(event){
+self.addEventListener('install', function (event) {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(function(cache){
-      return cache.addAll(SHELL_FILES);
-    }).then(function(){
-      return self.skipWaiting();
-    })
+    caches.open(CACHE_NAME).then(function (cache) {
+      return cache.addAll(APP_SHELL);
+    }).then(function () { return self.skipWaiting(); })
   );
 });
 
-self.addEventListener('activate', function(event){
+self.addEventListener('activate', function (event) {
   event.waitUntil(
-    caches.keys().then(function(keys){
+    caches.keys().then(function (keys) {
       return Promise.all(
-        keys.filter(function(key){ return key !== CACHE_NAME; })
-            .map(function(key){ return caches.delete(key); })
+        keys.filter(function (key) { return key !== CACHE_NAME; })
+          .map(function (key) { return caches.delete(key); })
       );
-    }).then(function(){
-      return self.clients.claim();
-    })
+    }).then(function () { return self.clients.claim(); })
   );
 });
 
-self.addEventListener('fetch', function(event){
-  var url = new URL(event.request.url);
+self.addEventListener('fetch', function (event) {
+  var req = event.request;
 
-  // Only handle same-origin GET requests (the app shell). Everything else —
-  // adsb.lol, adsb.fi, OpenSky, adsbdb, the CORS proxies, map tiles, fonts —
-  // must always go straight to the network so flight data is never stale.
-  if (url.origin !== self.location.origin || event.request.method !== 'GET'){
+  // Only handle same-origin GET requests; let everything else (Overpass API,
+  // Google Fonts, etc.) pass straight through to the network as usual.
+  if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) {
     return;
   }
 
   event.respondWith(
-    caches.match(event.request).then(function(cached){
-      var networkFetch = fetch(event.request).then(function(response){
-        if (response && response.ok){
-          var copy = response.clone();
-          caches.open(CACHE_NAME).then(function(cache){ cache.put(event.request, copy); });
+    caches.match(req).then(function (cached) {
+      var networkFetch = fetch(req).then(function (resp) {
+        if (resp && resp.status === 200) {
+          var copy = resp.clone();
+          caches.open(CACHE_NAME).then(function (cache) { cache.put(req, copy); });
         }
-        return response;
-      }).catch(function(){
-        return cached; // offline — fall back to whatever's cached, if anything
-      });
-      // Cache-first for instant load, but refresh the cache in the background.
+        return resp;
+      }).catch(function () { return cached; });
+      // Cache-first for instant offline loads, but refresh cache in the background.
       return cached || networkFetch;
     })
   );

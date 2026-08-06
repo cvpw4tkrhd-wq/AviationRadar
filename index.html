@@ -1,124 +1,3157 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>LUFTRUM — Live flygradar</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-<link rel="stylesheet" href="style.css">
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#050807">
-<link rel="icon" type="image/png" sizes="192x192" href="192px_icon.png">
-<link rel="icon" type="image/png" sizes="512x512" href="512px_icon.png">
-<link rel="apple-touch-icon" href="192px_icon.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Luftrum">
-<meta name="mobile-web-app-capable" content="yes">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Scorekort" />
+<meta name="theme-color" content="#1c3e2d" />
+<meta name="description" content="Gratis niohåls golfscorekort för par-3-banor. Håll koll på resultat, handicap och nettoscore för upp till 4 spelare direkt i mobilen — fungerar offline, installeras som en app." />
+<link rel="canonical" href="https://cvpw4tkrhd-wq.github.io/Min-golfapp/" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Niohåls-scorekort — gratis golfscorekort för par-3-banor" />
+<meta property="og:description" content="Håll koll på resultat, handicap och nettoscore för upp till 4 spelare, direkt i mobilen. Fungerar offline. Gratis och utan reklam." />
+<meta property="og:url" content="https://cvpw4tkrhd-wq.github.io/Min-golfapp/" />
+<meta property="og:image" content="https://cvpw4tkrhd-wq.github.io/Min-golfapp/icon-512.png" />
+<meta property="og:locale" content="sv_SE" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Niohåls-scorekort — gratis golfscorekort för par-3-banor" />
+<meta name="twitter:description" content="Håll koll på resultat, handicap och nettoscore för upp till 4 spelare, direkt i mobilen. Fungerar offline." />
+<meta name="twitter:image" content="https://cvpw4tkrhd-wq.github.io/Min-golfapp/icon-512.png" />
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="icon-192.png" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<title>Niohåls-scorekort — Gratis golfscorekort för par-3-banor</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bitter:wght@600;700;800&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600;700&display=swap');
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  :root {
+    --bg-stripe-a: #2d5a3d;
+    --bg-stripe-b: #2a5537;
+    --body-text: #f2efe4;
+    --header-title: #f7f4e9;
+    --header-subtitle: #a9c2ab;
+    --field-bg: #eef3e6;
+  }
+  body.theme-light {
+    --bg-stripe-a: #eef1e8;
+    --bg-stripe-b: #e6e9df;
+    --body-text: #2b2b2b;
+    --header-title: #1c3e2d;
+    --header-subtitle: #4d6b53;
+  }
+  body {
+    min-height: 100vh;
+    background:
+      repeating-linear-gradient(
+        100deg,
+        var(--bg-stripe-a) 0px, var(--bg-stripe-a) 46px,
+        var(--bg-stripe-b) 46px, var(--bg-stripe-b) 92px
+      );
+    font-family: 'Inter', sans-serif;
+    color: var(--body-text);
+    padding: max(20px, env(safe-area-inset-top)) 14px calc(60px + env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .header { width: 100%; max-width: 640px; text-align: center; margin-bottom: 18px; position: relative; }
+  .sound-toggle-btn, .theme-toggle-btn {
+    position: absolute; top: 0; background: rgba(0,0,0,0.25); border: none; border-radius: 20px;
+    width: 34px; height: 34px; font-size: 16px; cursor: pointer; color: #f7f4e9;
+  }
+  .sound-toggle-btn { right: 0; }
+  .theme-toggle-btn { right: 40px; }
+  .lang-row { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 8px; }
+  .lang-globe { font-size: 13px; opacity: 0.85; }
+  #langSelect {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--header-subtitle, #a9c2ab);
+    background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.25); border-radius: 12px; padding: 3px 8px;
+  }
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; letter-spacing: 0.22em; color: #c9a227; margin-bottom: 6px;
+  }
+  .title { font-family: 'Bitter', serif; font-weight: 800; font-size: 28px; color: var(--header-title); margin: 0; }
+  .subtitle { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--header-subtitle); margin-top: 6px; }
+
+  .meta-card {
+    width: 100%; max-width: 640px; background: var(--field-bg); border-radius: 10px;
+    padding: 16px 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.28); margin-bottom: 16px;
+  }
+  .meta-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; margin-bottom: 10px; }
+  .holes-toggle-field { margin-bottom: 10px; }
+  .holes-toggle-row { display: flex; align-items: center; gap: 10px; }
+  .holes-toggle-row label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.08em;
+    color: #6b6552; text-transform: uppercase; white-space: nowrap;
+  }
+  .holes-toggle { display: flex; gap: 6px; flex: 1; }
+  .holes-btn {
+    flex: 1; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; color: #6b6552;
+    background: #fffdf7; border: 1px solid #d8d0b8; border-radius: 6px; padding: 6px 8px; cursor: pointer;
+  }
+  .holes-btn.active { background: #2f5233; color: #f7f4e9; border-color: #2f5233; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.08em;
+    color: #6b6552; text-transform: uppercase;
+  }
+  .field input {
+    font-family: 'Inter', sans-serif; font-size: 16px; color: #2b2b2b;
+    background: #fffdf7; border: 1px solid #d8d0b8; border-radius: 6px; padding: 8px 9px;
+  }
+  .field input:focus { outline: 2px solid #2f5233; outline-offset: 1px; }
+
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(15, 25, 18, 0.72); z-index: 200;
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-card {
+    width: 100%; max-width: 420px; background: #f5f0e1; border-radius: 12px;
+    padding: 22px 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); max-height: 85vh; overflow-y: auto;
+  }
+  .modal-title {
+    font-family: 'Bitter', serif; font-weight: 800; font-size: 20px; color: #2b2b2b;
+    text-align: center; margin-bottom: 16px;
+  }
+  .summary-body { margin-bottom: 18px; }
+  .summary-warning {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #8a2f24;
+    background: #f0e4c8; border-radius: 6px; padding: 8px 10px; margin-bottom: 12px;
+  }
+  .summary-row {
+    display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid #e5dfc8;
+  }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-row.summary-winner { background: rgba(201,162,39,0.15); border-radius: 6px; padding-left: 6px; }
+  .summary-place {
+    font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 13px; color: #6b6552; width: 20px;
+  }
+  .summary-name { font-family: 'Bitter', serif; font-weight: 700; font-size: 14px; color: #2b2b2b; flex: 1; }
+  .summary-score { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #2f5233; text-align: right; }
+  .modal-btns { display: flex; gap: 10px; }
+  .modal-btns button { flex: 1; }
+
+  .leader-banner {
+    width: 100%; max-width: 640px; background: #c9a227; color: #1c2b1c; border-radius: 8px;
+    padding: 10px 14px; margin-bottom: 12px; font-family: 'Bitter', serif; font-weight: 800; font-size: 16px;
+    align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+  }
+  .leader-icon { font-size: 18px; }
+
+  .players-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.08em;
+    color: #8a2f24; text-transform: uppercase; margin-bottom: 8px;
+  }
+  .course-field { margin-bottom: 14px; }
+  .course-input-row { display: flex; gap: 8px; }
+  .course-input-row input {
+    flex: 1; font-family: 'Inter', sans-serif; font-size: 16px; color: #2b2b2b;
+    background: #fffdf7; border: 1px solid #d8d0b8; border-radius: 6px; padding: 8px 9px;
+  }
+  .course-input-row input:focus { outline: 2px solid #2f5233; outline-offset: 1px; }
+  .locate-btn {
+    width: 38px; height: 38px; flex-shrink: 0; border-radius: 6px; border: 1px solid #d8d0b8;
+    background: #fffdf7; font-size: 17px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .locate-btn:disabled { opacity: 0.5; cursor: default; }
+  .locate-btn.loading { animation: pulse 1s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .course-status {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: #6b6552; margin-top: 5px; min-height: 13px;
+  }
+  .course-status.error { color: #b23a2e; }
+  .course-status.success { color: #2f5233; }
+  .club-results {
+    width: 100%; margin-top: 8px; font-family: 'Inter', sans-serif; font-size: 13px; color: #2b2b2b;
+    background: #fffdf7; border: 1px solid #c9a227; border-radius: 6px; padding: 8px 9px;
+  }
+  .player-row-field { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .player-row-field .swatch-dot {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  }
+  .player-row-field input {
+    flex: 1; font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600; color: #2b2b2b;
+    background: #fffdf7; border: 1px solid #d8d0b8; border-radius: 6px; padding: 8px 9px;
+  }
+  .player-row-field input:focus { outline: 2px solid #2f5233; outline-offset: 1px; }
+  .remove-player-btn {
+    width: 30px; height: 30px; border-radius: 50%; border: none; background: #e5dfc8;
+    color: #8a2f24; font-size: 16px; font-weight: 700; line-height: 1; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .remove-player-btn:disabled { opacity: 0.35; cursor: default; }
+  .add-player-btn {
+    width: 100%; margin-top: 2px; padding: 9px; border-radius: 6px;
+    border: 1.5px dashed #b8ae8c; background: transparent; color: #6b6552;
+    font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  .add-player-btn:disabled { opacity: 0.4; cursor: default; }
+
+  .card {
+    width: 100%; max-width: 640px; background: var(--field-bg); border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.32); padding: 14px 8px 18px; margin-bottom: 14px;
+    overflow-x: auto;
+  }
+  table.score { border-collapse: collapse; width: 100%; min-width: 560px; }
+  table.score th, table.score td { text-align: center; padding: 6px 3px; }
+  .rowlabel {
+    text-align: left !important; font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    letter-spacing: 0.06em; color: #6b6552; text-transform: uppercase; padding-left: 6px !important; white-space: nowrap;
+  }
+  table.score thead th {
+    font-family: 'Bitter', serif; font-weight: 700; font-size: 14px; color: #2b2b2b;
+    border-bottom: 2px solid #2b2b2b; position: relative; height: 38px;
+  }
+  table.score tbody tr.par-row td {
+    font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #6b6552; border-bottom: 1px solid #d8d0b8;
+  }
+  table.score tbody tr.hcp-row td {
+    font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #8a2f24; border-bottom: 2px solid #2b2b2b;
+  }
+  .hcp-info {
+    display: inline-flex; align-items: center; justify-content: center; width: 13px; height: 13px;
+    border-radius: 50%; background: #d8d0b8; color: #6b6552; font-size: 9px; margin-left: 4px; cursor: help;
+  }
+  input.hcpindex {
+    width: 24px; height: 24px; text-align: center; font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px; font-weight: 600; color: #8a2f24; background: #fffdf7;
+    border: 1px solid #d8d0b8; border-radius: 4px; padding: 0;
+  }
+  input.hcpindex:focus { outline: none; border-color: #8a2f24; }
+  input.parinput {
+    width: 24px; height: 24px; text-align: center; font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px; font-weight: 700; color: #2b2b2b; background: #fffdf7;
+    border: 1px solid #d8d0b8; border-radius: 4px; padding: 0;
+  }
+  input.parinput:focus { outline: none; border-color: #2f5233; }
+  .hcp-legend {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #6b6552; text-align: center;
+    margin-top: 8px;
+  }
+  .player-extra-row { display: flex; align-items: center; gap: 4px; margin: -2px 0 8px 8px; flex-wrap: nowrap; }
+  .player-extra-row label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; color: #6b6552; letter-spacing: 0.02em; flex-shrink: 0;
+  }
+  .player-extra-row input {
+    width: 38px; font-family: 'Inter', sans-serif; font-size: 13px; color: #2b2b2b;
+    background: #fffdf7; border: 1px solid #d8d0b8; border-radius: 5px; padding: 5px 4px; min-width: 0;
+  }
+  .gender-select {
+    width: 34px; font-family: 'Inter', sans-serif; font-size: 13px; color: #2b2b2b;
+    background: #fffdf7; border: 1px solid #d8d0b8; border-radius: 5px; padding: 5px 2px;
+  }
+  .calc-btn {
+    width: 28px; height: 28px; flex-shrink: 0; border-radius: 5px; border: 1px solid #d8d0b8;
+    background: #fffdf7; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .calc-btn:active { transform: scale(0.95); }
+  .stroke-dots {
+    position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 1.5px; pointer-events: none;
+  }
+  .stroke-dots span { width: 3px; height: 3px; border-radius: 50%; background: #8a2f24; display: block; }
+  td.cell { position: relative; }
+  table.score tbody tr.player-row td { border-bottom: 1px solid #e5dfc8; }
+  tr.netto-row td {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #2f5233;
+    border-bottom: 1px solid #e5dfc8; padding-top: 0; padding-bottom: 4px; background: #f0ece0;
+  }
+  tr.netto-row .netto-label {
+    font-size: 9.5px; letter-spacing: 0.06em; color: #2f5233; text-transform: uppercase; opacity: 0.85;
+  }
+  tr.netto-row .netto-total-cell { font-weight: 700; }
+  .name-cell {
+    font-family: 'Bitter', serif; font-weight: 700; font-size: 13px; color: #2b2b2b;
+    text-align: left !important; padding-left: 6px !important; white-space: nowrap;
+    max-width: 90px; overflow: hidden; text-overflow: ellipsis;
+  }
+  .total-cell { font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 14px; color: #2b2b2b; }
+  .relpar { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #8a2f24; }
+
+  input.scoreinput {
+    width: 26px; height: 34px; text-align: center; font-family: 'IBM Plex Mono', monospace;
+    font-size: 15px; font-weight: 600; color: #2b2b2b; background: #fffdf7;
+    border: 1.5px solid #cfc7ab; border-radius: 4px; padding: 0;
+  }
+  input.scoreinput:focus { outline: none; border-color: #2f5233; box-shadow: 0 0 0 2px rgba(47,82,51,0.35); }
+  .cell.birdie input.scoreinput { border-radius: 50%; border-color: #c9a227; border-width: 2px; }
+  .cell.eagle input.scoreinput {
+    border-radius: 50%; border-color: #c9a227; border-width: 2px;
+    box-shadow: 0 0 0 2.5px #f5f0e1, 0 0 0 4.5px #c9a227;
+  }
+  .cell.bogey input.scoreinput { border-radius: 3px; border-color: #b23a2e; border-width: 2px; }
+  .cell.dbogey input.scoreinput {
+    border-radius: 3px; border-color: #b23a2e; border-width: 2px;
+    box-shadow: 0 0 0 2.5px #f5f0e1, 0 0 0 4.5px #b23a2e;
+  }
+
+  .hole-marker {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px; border-radius: 50%; font-size: 12px;
+    border: 2px solid transparent; box-sizing: border-box;
+    transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease;
+  }
+  .hole-marker.hole-marker-active {
+    border-color: #c9a227; background-color: rgba(201, 162, 39, 0.22); transform: scale(1.08);
+  }
+
+  .legend {
+    display: flex; gap: 14px; flex-wrap: wrap; justify-content: center;
+    font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: #a9c2ab; margin-bottom: 18px;
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .swatch { width: 12px; height: 12px; display: inline-block; border-width: 2px; border-style: solid; }
+  .sw-birdie { border-radius: 50%; border-color: #c9a227; }
+  .sw-par { border-radius: 3px; border-color: #cfc7ab; }
+  .sw-bogey { border-radius: 3px; border-color: #b23a2e; }
+
+  .btnrow {
+    width: 100%; max-width: 640px; display: flex; gap: 8px; flex-wrap: wrap;
+    justify-content: center; margin-bottom: 18px;
+  }
+  button {
+    font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; border: none;
+    border-radius: 7px; padding: 10px 14px; cursor: pointer;
+  }
+  button:active { transform: scale(0.97); }
+  .btn-primary { background: #c9a227; color: #1c2b1c; }
+  .btn-secondary { background: #f5f0e1; color: #2b2b2b; }
+  .btn-danger { background: #b23a2e; color: #fff2ee; }
+  .btn-ghost { background: transparent; color: #f2efe4; border: 1px solid rgba(242,239,228,0.4); }
+  .btn-ghost-dark { background: transparent; color: #2b2b2b; border: 1px solid #cfc7ab; }
+
+  .confirm-inline {
+    width: 100%; max-width: 640px; background: #b23a2e; color: #fff2ee; border-radius: 8px;
+    padding: 10px 14px; margin-bottom: 14px; display: none; align-items: center;
+    justify-content: space-between; gap: 10px; font-size: 13px;
+  }
+  .confirm-inline.show { display: flex; }
+  .confirm-inline .btns { display: flex; gap: 8px; }
+  .confirm-inline button { padding: 6px 12px; font-size: 12px; }
+
+  details.panel {
+    width: 100%; max-width: 640px; background: #f5f0e1; border-radius: 10px;
+    margin-bottom: 14px; overflow: hidden;
+  }
+  details.panel summary {
+    cursor: pointer; padding: 12px 16px; font-family: 'Bitter', serif; font-weight: 700;
+    font-size: 14px; color: #2b2b2b; list-style: none;
+  }
+  details.panel summary::-webkit-details-marker { display: none; }
+  details.panel[open] summary { border-bottom: 1px solid #d8d0b8; }
+  .panel-body { padding: 12px 16px 16px; }
+  .map-img {
+    width: 100%; height: auto; border-radius: 8px; border: 1px solid #e5dfc8; margin-bottom: 10px; display: block;
+    touch-action: pan-y;
+  }
+  .map-hole-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .map-hole-row label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.08em;
+    color: #6b6552; text-transform: uppercase;
+  }
+  #mapHoleSelect {
+    flex: 1; font-family: 'Inter', sans-serif; font-size: 14px; color: #2b2b2b;
+    background: #fffdf7; border: 1px solid #d8d0b8; border-radius: 6px; padding: 6px 9px;
+  }
+  .map-nav-btn {
+    width: 32px; height: 32px; flex-shrink: 0; border-radius: 6px; border: 1px solid #d8d0b8;
+    background: #fffdf7; font-size: 16px; font-weight: 700; color: #2f5233; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .map-nav-btn:active { background: #2f5233; color: #f7f4e9; }
+  pre.log {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; line-height: 1.5; color: #2b2b2b;
+    white-space: pre; overflow-x: auto; margin: 0 0 10px; background: #fffdf7;
+    border: 1px solid #e5dfc8; border-radius: 6px; padding: 10px;
+  }
+  .panel-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .history-filter-row {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #6b6552;
+  }
+  .history-filter-row select {
+    flex: 1; font-family: 'Inter', sans-serif; font-size: 13px; color: #2b2b2b;
+    background: #fffdf7; border: 1px solid #d8d0b8; border-radius: 6px; padding: 7px 8px;
+  }
+  .course-group { margin-bottom: 18px; }
+  .course-group:last-child { margin-bottom: 0; }
+  .course-group-header {
+    display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 4px 10px;
+    padding-bottom: 6px; margin-bottom: 8px; border-bottom: 2px solid #2b2b2b;
+  }
+  .course-group-header h3 {
+    font-family: 'Bitter', serif; font-weight: 700; font-size: 15px; color: #2b2b2b; margin: 0;
+  }
+  .course-group-stats {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: #6b6552;
+  }
+  .course-group-stats strong { color: #2f5233; }
+
+  .stats-block { margin-bottom: 20px; }
+  .stats-block:last-child { margin-bottom: 0; }
+  .stats-title {
+    font-family: 'Bitter', serif; font-weight: 700; font-size: 13px; color: #2b2b2b; margin-bottom: 8px;
+  }
+  #trendChart, #courseChart {
+    width: 100%; height: auto; background: #fffdf7; border: 1px solid #e5dfc8; border-radius: 6px;
+  }
+  .season-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
+  }
+  .season-card {
+    background: #fffdf7; border: 1px solid #e5dfc8; border-radius: 8px; padding: 10px 12px;
+  }
+  .season-card .value {
+    font-family: 'Bitter', serif; font-weight: 800; font-size: 20px; color: #2f5233; line-height: 1.1;
+  }
+  .season-card .label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #6b6552; letter-spacing: 0.03em; margin-top: 2px;
+  }
+  .quick-entry-bar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 500;
+    display: flex; flex-direction: column; gap: 6px;
+    padding: 8px calc(env(safe-area-inset-left, 0) + 6px) calc(env(safe-area-inset-bottom, 0) + 8px) calc(env(safe-area-inset-right, 0) + 6px);
+    background: #16301f; box-shadow: 0 -4px 14px rgba(0,0,0,0.35);
+    transform: translateY(110%); transition: transform 0.15s ease-out;
+  }
+  .quick-entry-bar.show { transform: translateY(0); }
+  .quick-entry-row { display: flex; gap: 6px; }
+  .quick-entry-bar button {
+    flex: 1; height: 54px; border-radius: 9px; border: none; background: #2f5233; color: #f7f4e9;
+    font-family: 'Bitter', serif; font-weight: 700; font-size: 20px; padding: 0; min-width: 0;
+  }
+  .quick-entry-bar button:active { background: #c9a227; color: #1c2b1c; }
+  .quick-entry-bar button.quick-clear { background: #6b2a22; font-size: 18px; }
+  .confetti-canvas {
+    position: fixed; inset: 0; z-index: 900; pointer-events: none;
+  }
+  .stats-legend {
+    display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: #6b6552;
+  }
+  .stats-legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .stats-legend .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+  .history-item { border-top: 1px solid #d8d0b8; padding-top: 10px; margin-top: 10px; }
+
+  .history-item:first-child { border-top: none; margin-top: 0; padding-top: 0; }
+  .history-head {
+    display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 4px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: #6b6552; margin-bottom: 6px;
+  }
+  .history-head strong { color: #2b2b2b; font-family: 'Bitter', serif; font-size: 13px; }
+  .empty-history { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #6b6552; text-align: center; padding: 6px 0; }
+  .backup-hint {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #6b6552; line-height: 1.5; margin: 0 0 12px;
+  }
+  .backup-btnrow { display: flex; gap: 8px; flex-wrap: wrap; }
+  .backup-btnrow button { flex: 1; min-width: 140px; }
+
+  .coffee-footnote {
+    width: 100%; max-width: 640px; text-align: center; margin: 4px 0 10px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px; line-height: 1.6; color: var(--header-subtitle, #a9c2ab);
+    opacity: 0.75;
+  }
+  .coffee-footnote a {
+    display: inline-block; margin-top: 2px; color: #c9a227; text-decoration: none;
+  }
+  .coffee-footnote a:hover { text-decoration: underline; }
+
+  .toast {
+    position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: #2b2b2b;
+    color: #f5f0e1; font-family: 'Inter', sans-serif; font-size: 13px; padding: 10px 16px;
+    border-radius: 8px; box-shadow: 0 6px 18px rgba(0,0,0,0.4); z-index: 50; opacity: 0;
+    pointer-events: none; transition: opacity 0.2s ease;
+  }
+  .toast.show { opacity: 1; }
+
+  @media (max-width: 420px) {
+    .title { font-size: 22px; }
+    .meta-row { grid-template-columns: 1fr; }
+  }
+</style>
 </head>
 <body>
-<div class="version-badge">v2.8</div>
-<div class="wrap">
 
-  <header>
-    <div>
-      <p class="eyebrow">Luftbevakning · realtid</p>
-      <h1>LUFT<span>RUM</span></h1>
-      <div class="status-line">
-        <span class="dot" id="statusDot"></span>
-        <span id="statusText">Initierar…</span>
-      </div>
-      <div class="lamp-row" id="lampRow">
-        <div class="lamp-item" id="indPosition"><span class="lamp"></span>Position</div>
-        <div class="lamp-item" id="indApi"><span class="lamp"></span>API</div>
-        <div class="lamp-item" id="indUpdated"><span class="lamp"></span>Uppdaterad <span id="indUpdatedTime">—</span></div>
+  <div style="position:fixed; top:calc(env(safe-area-inset-top, 0) + 14px); right:8px; z-index:100; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.03em; color:#a9c2ab; background:rgba(28,62,45,0.7); padding:2px 6px; border-radius:4px; pointer-events:none;">v1.45 · 2026-07-27</div>
+
+  <div id="jsError" style="display:none; width:100%; max-width:640px; background:#b23a2e; color:#fff2ee; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5; padding:10px 40px 10px 14px; border-radius:8px; margin-bottom:14px; white-space:pre-wrap; position:relative; word-break:break-word;"></div>
+  <style>
+    .js-error-close {
+      position: absolute; top: 6px; right: 8px; background: transparent; border: none;
+      color: #fff2ee; font-size: 18px; line-height: 1; cursor: pointer; padding: 4px;
+    }
+  </style>
+
+  <div class="header">
+    <button type="button" class="theme-toggle-btn" id="themeToggleBtn" data-i18n-title="theme_toggle_title" title="Mörkt/ljust tema">🌙</button>
+    <button type="button" class="sound-toggle-btn" id="soundToggleBtn" data-i18n-title="sound_toggle_title" title="Ljud vid birdie/bogey av/på">🔊</button>
+    <div class="eyebrow" data-i18n="eyebrow">KLUBBRUNDA · 1&ndash;4 SPELARE</div>
+    <h1 class="title" data-i18n="app_title">Niohåls-scorekort</h1>
+    <div class="subtitle"><span data-i18n="subtitle">9 hål · alla par 3 · par för rundan</span> <span id="parTotalLabel">27</span></div>
+    <div class="lang-row">
+      <span class="lang-globe">🌐</span>
+      <select id="langSelect" data-i18n-title="lang_toggle_title" title="Språk"></select>
+    </div>
+  </div>
+
+  <div class="meta-card">
+    <div class="field holes-toggle-field">
+      <div class="holes-toggle-row">
+        <label data-i18n="holes_toggle_label">Rundlängd</label>
+        <div class="holes-toggle" id="holesToggle">
+          <button type="button" class="holes-btn" data-holes="9" data-i18n="holes_9">9 hål</button>
+          <button type="button" class="holes-btn" data-holes="18" data-i18n="holes_18">18 hål</button>
+        </div>
       </div>
     </div>
-    <div class="controls">
-      <select id="rangeSelect" aria-label="Räckvidd">
-        <option value="25">25 km</option>
-        <option value="50" selected>50 km</option>
-        <option value="100">100 km</option>
-        <option value="200">200 km</option>
-        <option value="400">400 km</option>
-      </select>
-      <button id="refreshBtn" type="button">Uppdatera</button>
-      <button id="locBtn" class="ghost" type="button">Position</button>
-      <button id="themeBtn" class="ghost" type="button" aria-label="Byt färgtema">☀ Ljust läge</button>
+
+    <div class="field holes-toggle-field">
+      <div class="holes-toggle-row">
+        <label data-i18n="scoring_mode_label">Spelform</label>
+        <div class="holes-toggle" id="scoringModeToggle">
+          <button type="button" class="holes-btn" data-mode="stroke" data-i18n="scoring_stroke">Slagspel</button>
+          <button type="button" class="holes-btn" data-mode="stableford" data-i18n="scoring_stableford">Poängbogey</button>
+        </div>
+      </div>
     </div>
-  </header>
 
-  <main>
-    <section class="scope-card">
-      <p class="card-title">
-        <span>Radarskärm</span>
-        <span id="rangeLabel">50 KM</span>
-      </p>
-      <div class="scope-wrap" id="scopeWrap">
-        <div id="miniMap"></div>
-        <div class="map-veil"></div>
-        <svg id="scopeSvg" viewBox="0 0 460 460"></svg>
+    <div class="meta-row">
+      <div class="field">
+        <label for="date" data-i18n="date_label">Datum</label>
+        <input id="date" type="date" />
       </div>
-      <p class="scope-footnote" id="scopeFootnote">Väntar på position…</p>
+      <div class="field">
+        <label for="time" data-i18n="time_label">Starttid</label>
+        <input id="time" type="time" />
+      </div>
+    </div>
 
-      <div class="manual open" id="manualPanel">
-        <p style="width:100%; font-size:10.5px; color:var(--text-faint); margin:0 0 2px;">Automatisk positionering opålitlig hos dig? Ange koordinater direkt (t.ex. från Google Maps: håll fingret på din plats):</p>
-        <div class="manual-field">
-          <label for="latInput">Latitud</label>
-          <input id="latInput" type="text" placeholder="59.3293">
+    <div class="field course-field">
+      <label for="club" data-i18n="club_label">Golfklubb</label>
+      <div class="course-input-row">
+        <input id="club" type="text" placeholder="T.ex. Djursholms GK" data-i18n-placeholder="club_placeholder" />
+        <button class="locate-btn" id="locateBtn" type="button" data-i18n-title="locate_btn_title" title="Hitta klubbar i närheten">📍</button>
+      </div>
+      <div class="course-status" id="courseStatus"></div>
+      <select id="clubResults" class="club-results" style="display:none;"></select>
+    </div>
+
+    <div class="players-label" data-i18n="players_label">Spelare (max 4)</div>
+    <div id="playersFields"></div>
+    <datalist id="knownPlayers"></datalist>
+    <button class="add-player-btn" id="addPlayerBtn" type="button" data-i18n="add_player_btn">+ Lägg till spelare</button>
+  </div>
+
+  <details class="panel" id="mapGuidePanel" style="display:none;">
+    <summary data-i18n="map_guide_title">Banguide</summary>
+    <div class="panel-body">
+      <img id="mapOverviewImg" class="map-img" alt="" loading="lazy" style="display:none;" />
+      <div class="map-hole-row">
+        <label for="mapHoleSelect" data-i18n="map_hole_label">Hål</label>
+        <button type="button" id="mapHolePrev" class="map-nav-btn" aria-label="Föregående hål">‹</button>
+        <select id="mapHoleSelect"></select>
+        <button type="button" id="mapHoleNext" class="map-nav-btn" aria-label="Nästa hål">›</button>
+      </div>
+      <img id="mapHoleImg" class="map-img" alt="" loading="lazy" style="display:none;" />
+    </div>
+  </details>
+
+  <div id="leaderBanner" class="leader-banner" style="display:none;"></div>
+
+  <div class="card">
+    <table class="score">
+      <thead>
+        <tr id="headRow">
+          <th class="rowlabel" data-i18n="hole_th">Hål</th>
+          <!-- hole headers injected -->
+          <th id="totalColHeader" data-i18n="total_th">Totalt</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="par-row" id="parRow">
+          <td class="rowlabel" data-i18n="par_row_label">Par</td>
+          <!-- par cells injected -->
+          <td id="parTotalCell">27</td>
+        </tr>
+        <tr class="hcp-row" id="hcpRow">
+          <td class="rowlabel"><span data-i18n="index_row_label">Index</span><span class="hcp-info" data-i18n-title="index_info_title" title="Skriv in din banas egna slagindex-siffror rakt av (t.ex. 1-18 eller udda tal) — appen räknar själv ut vilket hål som är svårast.">?</span></td>
+          <!-- stroke index cells injected -->
+          <td></td>
+        </tr>
+      </tbody>
+      <tbody id="playerRows"></tbody>
+    </table>
+    <div class="hcp-legend" data-i18n="hcp_legend">● = extra slag på hålet för spelaren (netto-par)</div>
+  </div>
+
+  <div class="legend">
+    <span><span class="swatch sw-birdie"></span> <span data-i18n="legend_birdie">Birdie / eagle (dubbel ring)</span></span>
+    <span><span class="swatch sw-par"></span> <span data-i18n="legend_par">Par</span></span>
+    <span><span class="swatch sw-bogey"></span> <span data-i18n="legend_bogey">Bogey / dubbel (dubbel ram)</span></span>
+  </div>
+
+  <div class="confirm-inline" id="confirmNew">
+    <span data-i18n="confirm_new_text">Starta ny runda? Nuvarande inmatning skrivs över (spara den först om du vill behålla den).</span>
+    <div class="btns">
+      <button class="btn-secondary" id="cancelNewBtn" type="button" data-i18n="cancel_btn">Avbryt</button>
+      <button class="btn-danger" id="confirmNewBtn" type="button" data-i18n="confirm_new_btn">Ja, ny runda</button>
+    </div>
+  </div>
+
+  <div class="confirm-inline" id="confirmClear">
+    <span data-i18n="confirm_clear_text">Rensa alla inmatade slag? Spelare, klubb och HCP behålls — bara resultaten nollställs.</span>
+    <div class="btns">
+      <button class="btn-secondary" id="cancelClearBtn" type="button" data-i18n="cancel_btn">Avbryt</button>
+      <button class="btn-danger" id="confirmClearBtn" type="button" data-i18n="confirm_clear_btn">Ja, rensa</button>
+    </div>
+  </div>
+
+  <div class="confirm-inline" id="confirmHoles">
+    <span data-i18n="confirm_holes_switch">Byta rundlängd? Nuvarande inmatning skrivs över (spara den först om du vill behålla den).</span>
+    <div class="btns">
+      <button class="btn-secondary" id="cancelHolesBtn" type="button" data-i18n="cancel_btn">Avbryt</button>
+      <button class="btn-danger" id="confirmHolesBtn" type="button" data-i18n="confirm_new_btn">Ja, ny runda</button>
+    </div>
+  </div>
+
+  <div class="btnrow">
+    <button class="btn-secondary" id="newRoundBtn" type="button" data-i18n="new_round_btn">Ny runda</button>
+    <button class="btn-secondary" id="clearScoresBtn" type="button" data-i18n="clear_scores_btn">Rensa resultat</button>
+    <button class="btn-primary" id="saveHistoryBtn" type="button" data-i18n="save_history_btn">Spara runda i historik</button>
+    <button class="btn-ghost" id="shareBtn" type="button" data-i18n="share_btn">Dela</button>
+    <button class="btn-ghost" id="copyLogBtn" type="button" data-i18n="copy_log_btn">Kopiera logg</button>
+  </div>
+
+  <details class="panel" id="statsPanel">
+    <summary data-i18n="stats_panel_title">Statistik</summary>
+    <div class="panel-body">
+      <div id="statsEmpty" class="empty-history" data-i18n="stats_empty">Spara några rundor för att se statistik.</div>
+      <div id="statsContent" style="display:none;">
+        <div class="stats-block">
+          <div class="stats-title" data-i18n="season_stats_title">Säsongen i siffror</div>
+          <div class="season-grid" id="seasonGrid"></div>
         </div>
-        <div class="manual-field">
-          <label for="lonInput">Longitud</label>
-          <input id="lonInput" type="text" placeholder="18.0686">
+        <div class="stats-block">
+          <div class="stats-title" data-i18n="trend_chart_title">Resultat mot par per runda</div>
+          <canvas id="trendChart" width="600" height="220"></canvas>
+          <div class="stats-legend" id="trendLegend"></div>
         </div>
-        <div class="manual-field" style="justify-content:flex-end; display:flex;">
-          <button id="manualSetBtn" type="button">Använd koordinater</button>
+        <div class="stats-block">
+          <div class="stats-title" data-i18n="course_chart_title">Snittresultat per klubb</div>
+          <canvas id="courseChart" width="600" height="220"></canvas>
         </div>
       </div>
-    </section>
+    </div>
+  </details>
 
-    <section class="list-card">
-      <p class="card-title">
-        <span>Flygplan inom räckvidd</span>
-        <span id="countLabel">0</span>
-      </p>
-      <div class="list-scroll">
-        <table id="acTable" aria-live="polite">
-          <thead>
-            <tr>
-              <th data-key="callsign">Anrop</th>
-              <th data-key="alt">Höjd</th>
-              <th data-key="spd">Fart</th>
-              <th data-key="dist">Avstånd</th>
-              <th data-key="hdg">Riktn.</th>
-              <th data-key="country">Info</th>
-            </tr>
-          </thead>
-          <tbody id="acTableBody"></tbody>
-        </table>
-        <div class="empty" id="emptyState" style="display:none;">Inga flygplan inom räckvidd just nu.</div>
-        <div class="loading" id="loadingState">Hämtar flygdata</div>
+  <details class="panel" id="historyPanel">
+    <summary><span data-i18n="history_panel_title">Sparade rundor</span> (<span id="historyCount">0</span>)</summary>
+    <div class="panel-body">
+      <div class="history-filter-row" id="historyFilterRow" style="display:none;">
+        <label for="courseFilter" data-i18n="history_filter_label">Visa bana</label>
+        <select id="courseFilter"></select>
       </div>
-
-      <div class="detail" id="detailPanel">
-        <p class="card-title" style="margin-bottom:0;" id="detailTitle">Vald flygning</p>
-        <div id="detailContent">
-          <p class="detail-empty" style="margin-top:10px;">Klicka på ett flygplan i listan eller på radarn för detaljer.</p>
-        </div>
+      <div id="historyBody">
+        <div class="empty-history" data-i18n="history_empty">Inga sparade rundor än.</div>
       </div>
-    </section>
-  </main>
+    </div>
+  </details>
 
-  <footer>
-    Flygdata från <a href="https://opensky-network.org" target="_blank" rel="noopener">OpenSky Network</a> (öppen, anonym åtkomst — ca 5–15 s fördröjning).
-    Positioner beräknas lokalt i din webbläsare och skickas aldrig vidare.<br>
-    Kartbakgrund © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>-bidragsgivare, © <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>.
-  </footer>
-</div>
+  <details class="panel" id="backupPanel">
+    <summary data-i18n="backup_panel_title">Säkerhetskopia</summary>
+    <div class="panel-body">
+      <p class="backup-hint" data-i18n="backup_hint">All data sparas bara i den här webbläsaren. Exportera regelbundet, särskilt inför att byta telefon eller rensa webbläsardata.</p>
+      <div class="backup-btnrow">
+        <button class="btn-secondary" id="exportBackupBtn" type="button" data-i18n="export_backup_btn">Exportera säkerhetskopia</button>
+        <button class="btn-ghost" id="importBackupBtn" type="button" data-i18n="import_backup_btn">Återställ från fil</button>
+        <input type="file" id="importBackupFile" accept="application/json,.json" style="display:none;" />
+      </div>
+    </div>
+  </details>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="app.js"></script>
+  <div class="coffee-footnote">
+    <span data-i18n="coffee_footnote">Om du gillar denna app får du gärna tacka mig med att donera en kopp kaffe :)</span>
+    <a href="https://buymeacoffee.com/psjastad" target="_blank" rel="noopener">buymeacoffee.com/psjastad</a>
+  </div>
+
+  <div class="confirm-inline" id="confirmImport">
+    <span id="confirmImportText" data-i18n="confirm_import_text">Återställ från säkerhetskopia? Nuvarande historik och spelarminnen skrivs över.</span>
+    <div class="btns">
+      <button class="btn-secondary" id="cancelImportBtn" type="button" data-i18n="cancel_btn">Avbryt</button>
+      <button class="btn-danger" id="confirmImportBtn" type="button" data-i18n="confirm_import_btn">Ja, återställ</button>
+    </div>
+  </div>
+
+  <div class="quick-entry-bar" id="quickEntryBar">
+    <div class="quick-entry-row">
+      <button type="button" data-score="1">1</button>
+      <button type="button" data-score="2">2</button>
+      <button type="button" data-score="3">3</button>
+      <button type="button" data-score="4">4</button>
+      <button type="button" data-score="5">5</button>
+    </div>
+    <div class="quick-entry-row">
+      <button type="button" data-score="6">6</button>
+      <button type="button" data-score="7">7</button>
+      <button type="button" data-score="8">8</button>
+      <button type="button" data-score="9">9</button>
+      <button type="button" class="quick-clear" data-score="">⌫</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div id="summaryModal" class="modal-overlay" style="display:none;">
+    <div class="modal-card">
+      <div class="modal-title" data-i18n="match_done_title">Match klar!</div>
+      <div id="summaryBody" class="summary-body"></div>
+      <div class="modal-btns">
+        <button class="btn-secondary" id="summaryCancelBtn" type="button" data-i18n="cancel_btn">Avbryt</button>
+        <button class="btn-primary" id="summarySaveBtn" type="button" data-i18n="summary_save_btn">Spara &amp; stäng</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  function showJsError(text) {
+    var box = document.getElementById('jsError');
+    if (!box) return;
+    box.style.display = 'block';
+    var msgEl = box.querySelector('.js-error-msg');
+    if (!msgEl) {
+      box.innerHTML = '<span class="js-error-msg"></span><button type="button" class="js-error-close" aria-label="Stäng">×</button>';
+      msgEl = box.querySelector('.js-error-msg');
+      box.querySelector('.js-error-close').addEventListener('click', function () {
+        box.style.display = 'none';
+      });
+    }
+    msgEl.textContent += (msgEl.textContent ? '\n\n' : '') + text;
+  }
+  window.addEventListener('error', function (e) {
+    // Browsers deliberately strip all detail (no filename/line/stack) for errors
+    // thrown by cross-origin code, e.g. browser extensions/content blockers
+    // injecting scripts into the page. Those are not actionable here and don't
+    // affect the app, so we skip showing them to avoid alarming the user.
+    var isSanitized = e.message === 'Script error.' && !e.filename && !(e.error && e.error.stack);
+    if (isSanitized) return;
+
+    var detail = e.message || 'okänt fel';
+    if (e.filename) detail += ' — ' + e.filename.split('/').pop() + ':' + e.lineno + ':' + e.colno;
+    if (e.error && e.error.stack) detail += '\n' + e.error.stack;
+    showJsError('JS-fel: ' + detail);
+  });
+  window.addEventListener('unhandledrejection', function (e) {
+    var reason = e.reason;
+    var detail = (reason && (reason.message || reason.toString())) || 'okänt promise-fel';
+    if (reason && reason.stack) detail += '\n' + reason.stack;
+    showJsError('Ohanterat promise-fel: ' + detail);
+  });
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('error', function (e) {
+      showJsError('Service worker-fel: ' + (e.message || e));
+    });
+  }
+</script>
+<script>
+(function () {
+  var HOLES = 9;
+  var PAR = 3; // legacy default (used as fallback when a hole's own par is unknown)
+  var parPerHole = [3, 3, 3, 3, 3, 3, 3, 3, 3];
+  function parAt(h) { return (parPerHole && parPerHole[h] != null) ? parPerHole[h] : PAR; }
+  function totalPar() {
+    var sum = 0;
+    for (var h = 0; h < HOLES; h++) sum += parAt(h);
+    return sum;
+  }
+  function defaultParPerHole(n) {
+    var arr = [];
+    for (var i = 0; i < n; i++) arr.push(3);
+    return arr;
+  }
+  // sum of par for the holes that actually have a score entered — correct even
+  // when holes have different pars (a real 18-hole course), unlike played*PAR.
+  function sumParForPlayed(scoresArr, parArr) {
+    var total = 0;
+    for (var h = 0; h < scoresArr.length; h++) {
+      if (scoresArr[h] !== '' && scoresArr[h] != null) total += (parArr && parArr[h] != null) ? parArr[h] : 3;
+    }
+    return total;
+  }
+  // Stableford: 2 points for net par, 1 per stroke better/worse (min 0).
+  function stablefordPoints(score, netPar) {
+    if (score === '' || score == null) return null;
+    return Math.max(0, (netPar - Number(score)) + 2);
+  }
+  function sumStablefordForPlayer(scoresArr, strokeIndexArr, extra, parArr) {
+    var total = 0;
+    var ranks = computeStrokeRanks(strokeIndexArr);
+    for (var h = 0; h < scoresArr.length; h++) {
+      var v = scoresArr[h];
+      if (v === '' || v == null) continue;
+      var np = (parArr && parArr[h] != null ? parArr[h] : parAt(h)) + strokesOnHole(extra, ranks[h]);
+      total += stablefordPoints(v, np);
+    }
+    return total;
+  }
+  var MIN_PLAYERS = 1;
+  var MAX_PLAYERS = 4;
+  var STORAGE_ROUND = 'golf-current-round';
+  var STORAGE_HISTORY = 'golf-history';
+  var STORAGE_PROFILES = 'golf-player-profiles';
+  var STORAGE_SOUND = 'golf-sound-enabled';
+  var STORAGE_THEME = 'golf-theme';
+  var STORAGE_LANG = 'golf-lang';
+  var PLAYER_COLORS = ['#8a2f24', '#2f5233', '#5b4a8a', '#8a6a1c'];
+
+  // ---- internationalization (i18n) ----
+  var SUPPORTED_LANGS = ['sv', 'no', 'da', 'fi', 'is', 'en', 'es', 'fr', 'it', 'de'];
+  var LANG_NAMES_FALLBACK = {
+    sv: 'Svenska', no: 'Norsk', da: 'Dansk', fi: 'Suomi', is: 'Íslenska',
+    en: 'English', es: 'Español', fr: 'Français', it: 'Italiano', de: 'Deutsch'
+  };
+  var i18nStrings = {};
+  var i18nNames = {};
+  var i18nLoaded = false;
+
+  function detectOSLanguage() {
+    var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || 'sv'];
+    for (var i = 0; i < langs.length; i++) {
+      var code = (langs[i] || '').toLowerCase().split('-')[0];
+      // Norwegian can appear as 'nb' (bokmål) or 'nn' (nynorsk); both map to our 'no'
+      if (code === 'nb' || code === 'nn') code = 'no';
+      if (SUPPORTED_LANGS.indexOf(code) !== -1) return code;
+    }
+    return 'sv';
+  }
+
+  var currentLang = 'sv';
+  try {
+    var savedLang = localStorage.getItem(STORAGE_LANG);
+    currentLang = (savedLang && SUPPORTED_LANGS.indexOf(savedLang) !== -1) ? savedLang : detectOSLanguage();
+  } catch (e) { currentLang = detectOSLanguage(); }
+
+  function loadTranslations() {
+    return fetch('i18n.json')
+      .then(function (resp) { return resp.ok ? resp.json() : null; })
+      .then(function (data) {
+        if (data && data.strings) {
+          i18nStrings = data.strings;
+          i18nNames = data.names || {};
+          i18nLoaded = true;
+          applyTranslations();
+          renderLanguageOptions();
+        }
+      })
+      .catch(function () {
+        // offline on first load with nothing cached yet — UI stays in Swedish (baked into the HTML) until this can load.
+      });
+  }
+
+  function t(key, vars) {
+    var entry = i18nStrings[key];
+    var text = entry ? (entry[currentLang] || entry.en || entry.sv) : null;
+    if (!text) return key;
+    if (vars) {
+      Object.keys(vars).forEach(function (k) {
+        text = text.replace('{' + k + '}', vars[k]);
+      });
+    }
+    return text;
+  }
+
+  function applyTranslations() {
+    document.querySelectorAll('[data-i18n]').forEach(function (el) {
+      var key = el.getAttribute('data-i18n');
+      var text = t(key);
+      if (text !== key) el.textContent = text;
+    });
+    document.querySelectorAll('[data-i18n-title]').forEach(function (el) {
+      var key = el.getAttribute('data-i18n-title');
+      var text = t(key);
+      if (text !== key) el.title = text;
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(function (el) {
+      var key = el.getAttribute('data-i18n-placeholder');
+      var text = t(key);
+      if (text !== key) el.placeholder = text;
+    });
+    document.documentElement.lang = currentLang;
+    rebuildPlayerRows();
+    renderPlayerFields();
+    render();
+    renderHistory();
+  }
+
+  function setLanguage(lang) {
+    if (SUPPORTED_LANGS.indexOf(lang) === -1) return;
+    currentLang = lang;
+    try { localStorage.setItem(STORAGE_LANG, lang); } catch (e) {}
+    applyTranslations();
+  }
+
+  function renderLanguageOptions() {
+    var sel = document.getElementById('langSelect');
+    if (!sel) return;
+    sel.innerHTML = '';
+    SUPPORTED_LANGS.forEach(function (code) {
+      var opt = document.createElement('option');
+      opt.value = code;
+      opt.textContent = i18nNames[code] || LANG_NAMES_FALLBACK[code] || code;
+      if (code === currentLang) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  }
+
+  // Course/slope data now lives in courses.json (loaded below) instead of being
+  // hardcoded here, so the club database can grow without touching app logic.
+  var KNOWN_COURSES = [];
+  var knownCoursesLoaded = false;
+
+  function loadCourseDatabase() {
+    return fetch('courses.json')
+      .then(function (resp) { return resp.ok ? resp.json() : null; })
+      .then(function (data) {
+        if (data && Array.isArray(data.courses)) {
+          KNOWN_COURSES = data.courses;
+          knownCoursesLoaded = true;
+        }
+      })
+      .catch(function () {
+        // offline on first load with nothing cached yet — calculator features
+        // just stay unavailable until the file can be fetched.
+      });
+  }
+
+  function findKnownCourse(clubName) {
+    var key = (clubName || '').trim().toLowerCase();
+    if (!key) return null;
+    for (var i = 0; i < KNOWN_COURSES.length; i++) {
+      var m = KNOWN_COURSES[i].match;
+      var keywords = Array.isArray(m) ? m : [m];
+      for (var j = 0; j < keywords.length; j++) {
+        if (keywords[j] && key.indexOf(keywords[j]) !== -1) return KNOWN_COURSES[i];
+      }
+    }
+    return null;
+  }
+  function lookupCourseStrokeIndex(clubName) {
+    var course = findKnownCourse(clubName);
+    return (course && course.strokeIndex) ? course : null;
+  }
+  function lookupSlopeTable(clubName) {
+    var course = findKnownCourse(clubName);
+    if (!course || !course.slope) return null;
+    return { name: course.name, men: course.slope.men, women: course.slope.women, ratedHoles: course.slopeHolesRated || 18 };
+  }
+  function computeCourseHandicap(hcp, table, ratedHoles) {
+    var n = Number(String(hcp).replace(',', '.'));
+    if (!isFinite(n)) return null;
+    var raw = n * (table.slope / 113) + (table.cr - table.par);
+    var full = Math.max(0, Math.round(raw));
+    // WHS 9-hole procedure: take the fully-rated Course Handicap, then scale
+    // it to the number of holes actually being played and round again —
+    // e.g. a course rated as an 18-hole double-loop (like a 9-hole par-3
+    // course rated "played twice") needs its handicap halved for a single
+    // 9-hole round, otherwise every player gets roughly double their real strokes.
+    if (ratedHoles && ratedHoles !== HOLES) {
+      return Math.max(0, Math.round(full * HOLES / ratedHoles));
+    }
+    return full;
+  }
+  function autoCalcExtraForPlayer(p, silent) {
+    var table = lookupSlopeTable(state.club);
+    if (!table) { if (!silent) showToast(t('toast_no_slope_table', { club: state.club || t('club_label') })); return; }
+    var g = state.genders[p];
+    if (!g) { if (!silent) showToast(t('toast_select_gender')); return; }
+    if (!state.handicaps[p]) { if (!silent) showToast(t('toast_fill_hcp')); return; }
+    var courseData = g === 'M' ? table.men : table.women;
+    if (!courseData) { if (!silent) showToast(t('toast_no_verified_data', { gender: g === 'M' ? t('gender_men_word') : t('gender_women_word') })); return; }
+    var result = computeCourseHandicap(state.handicaps[p], courseData, table.ratedHoles);
+    if (result == null) { if (!silent) showToast(t('toast_cant_parse_hcp')); return; }
+    state.extras[p] = String(result);
+    persistRound();
+    render();
+    showToast(t('toast_extra_calculated', { result: result, course: table.name }));
+  }
+  function autoCalcExtraForAllPlayers() {
+    state.players.forEach(function (name, p) { autoCalcExtraForPlayer(p, true); });
+  }
+
+  function todayISO() {
+    var d = new Date();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    return d.getFullYear() + '-' + m + '-' + day;
+  }
+  function nowHM() {
+    var d = new Date();
+    return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  }
+  function playedCount(arr) { return arr.filter(function (v) { return v !== '' && v != null; }).length; }
+  var roundCompletionCelebrated = false;
+  function isRoundComplete() {
+    return state.players.length > 0 && state.players.every(function (name, p) {
+      return playedCount(state.scores[p]) === HOLES;
+    });
+  }
+  function checkRoundComplete() {
+    var complete = isRoundComplete();
+    if (complete && !roundCompletionCelebrated) {
+      roundCompletionCelebrated = true;
+      fireConfetti(2600);
+      playWinnerFanfare();
+      openSummaryModal();
+    } else if (!complete) {
+      roundCompletionCelebrated = false;
+    }
+  }
+  function sumArr(arr) { return arr.reduce(function (a, b) { return a + (Number(b) || 0); }, 0); }
+  function diffLabel(n) { if (n === 0) return 'E'; return n > 0 ? '+' + n : '' + n; }
+  function defaultStrokeIndex(n) {
+    n = n || HOLES;
+    var arr = [];
+    for (var i = 0; i < n; i++) arr.push(i + 1);
+    return arr;
+  }
+  function defaultStrokeIndexFor(n) { return defaultStrokeIndex(n); }
+  function strokesOnHole(extra, rank, n) {
+    n = n || HOLES;
+    extra = Number(extra) || 0;
+    if (extra <= 0) return 0;
+    var base = Math.floor(extra / n);
+    var remainder = extra % n;
+    return base + (Number(rank) <= remainder ? 1 : 0);
+  }
+  // Converts whatever numbers are in the "Index" row (the club's own INDX
+  // column — could be 1-9, or 1-18/odd-only, or anything) into a relative
+  // difficulty rank 1..HOLES, since only the relative order matters for
+  // allocating strokes. Ties broken by hole order.
+  function computeStrokeRanks(strokeIndexArr, n) {
+    n = n || HOLES;
+    var arr = strokeIndexArr && strokeIndexArr.length === n ? strokeIndexArr : defaultStrokeIndex(n);
+    var withIdx = arr.map(function (v, h) { return { h: h, v: (v === '' || v == null) ? (h + 1) : Number(v) }; });
+    withIdx.sort(function (a, b) { return a.v - b.v || a.h - b.h; });
+    var ranks = [];
+    withIdx.forEach(function (item, i) { ranks[item.h] = i + 1; });
+    return ranks;
+  }
+  function computeStrokeRanksFor(strokeIndexArr, n) { return computeStrokeRanks(strokeIndexArr, n); }
+  function netParForHole(strokeIndexArr, extra, h) {
+    var ranks = computeStrokeRanks(strokeIndexArr);
+    return parAt(h) + strokesOnHole(extra, ranks[h]);
+  }
+  function scoreClass(val, np) {
+    if (val === '' || val == null) return '';
+    var parRef = np == null ? PAR : np;
+    var d = Number(val) - parRef;
+    if (d <= -2) return 'eagle';
+    if (d === -1) return 'birdie';
+    if (d === 0) return '';
+    if (d === 1) return 'bogey';
+    return 'dbogey';
+  }
+  function pad(s, n) { s = String(s); while (s.length < n) s += ' '; return s; }
+  function playerLabel(p) {
+    var s = t('player_n', { n: p + 1 });
+    if (!s || s === 'player_n' || s.indexOf('{n}') !== -1) return 'Spelare ' + (p + 1);
+    return s;
+  }
+
+  // ---- sound & haptic feedback ----
+  var soundEnabled = true;
+  try { var savedSound = localStorage.getItem(STORAGE_SOUND); if (savedSound !== null) soundEnabled = savedSound === '1'; } catch (e) {}
+  var audioCtx = null;
+  function getAudioCtx() {
+    if (!audioCtx) {
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if (Ctx) audioCtx = new Ctx();
+    }
+    return audioCtx;
+  }
+  function playTone(freq, duration, delay) {
+    var ctx = getAudioCtx();
+    if (!ctx) return;
+    var t0 = ctx.currentTime + (delay || 0);
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, t0);
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(0.18, t0 + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(t0);
+    osc.stop(t0 + duration + 0.02);
+  }
+  function playScoreFeedback(cls) {
+    if (!soundEnabled) return;
+    if (cls === 'eagle') {
+      playTone(880, 0.14, 0); playTone(1174, 0.18, 0.1);
+      if (navigator.vibrate) navigator.vibrate([30, 40, 30]);
+    } else if (cls === 'birdie') {
+      playTone(988, 0.16, 0);
+      if (navigator.vibrate) navigator.vibrate(30);
+    } else if (cls === 'bogey' || cls === 'dbogey') {
+      playTone(220, 0.2, 0);
+      if (navigator.vibrate) navigator.vibrate(15);
+    }
+  }
+  function setSoundEnabled(on) {
+    soundEnabled = on;
+    try { localStorage.setItem(STORAGE_SOUND, on ? '1' : '0'); } catch (e) {}
+    var btn = document.getElementById('soundToggleBtn');
+    if (btn) btn.textContent = on ? '🔊' : '🔇';
+  }
+
+  // ---- celebrations (hole-in-one, match winner) ----
+  var CONFETTI_COLORS = ['#c9a227', '#f7f4e9', '#2f5233', '#b23a2e', '#5b4a8a', '#8a6a1c'];
+
+  function fireConfetti(durationMs) {
+    var canvas = document.createElement('canvas');
+    canvas.className = 'confetti-canvas';
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    document.body.appendChild(canvas);
+    var ctx = canvas.getContext('2d');
+
+    var particles = [];
+    var count = 140;
+    for (var i = 0; i < count; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: -20 - Math.random() * canvas.height * 0.5,
+        w: 6 + Math.random() * 6,
+        h: 8 + Math.random() * 8,
+        color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+        vy: 2 + Math.random() * 3,
+        vx: -1.5 + Math.random() * 3,
+        rot: Math.random() * Math.PI * 2,
+        vrot: -0.2 + Math.random() * 0.4
+      });
+    }
+
+    var start = performance.now();
+    var total = durationMs || 2200;
+
+    function frame(now) {
+      var elapsed = now - start;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(function (p) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.03;
+        p.rot += p.vrot;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        ctx.restore();
+      });
+      if (elapsed < total) {
+        requestAnimationFrame(frame);
+      } else {
+        canvas.remove();
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function playHoleInOneFanfare() {
+    if (!soundEnabled) return;
+    playTone(659, 0.14, 0);
+    playTone(784, 0.14, 0.12);
+    playTone(988, 0.14, 0.24);
+    playTone(1318, 0.35, 0.36);
+    if (navigator.vibrate) navigator.vibrate([25, 40, 25, 40, 60]);
+  }
+
+  function playWinnerFanfare() {
+    if (!soundEnabled) return;
+    playTone(523, 0.16, 0);
+    playTone(659, 0.16, 0.14);
+    playTone(784, 0.16, 0.28);
+    playTone(1046, 0.4, 0.42);
+    if (navigator.vibrate) navigator.vibrate([30, 30, 30, 30, 80]);
+  }
+
+  function celebrateHoleInOne() {
+    fireConfetti(2200);
+    playHoleInOneFanfare();
+    showToast(t('toast_hole_in_one'));
+  }
+
+  // ---- theme (dark / light) ----
+  var currentTheme = 'dark';
+  try { var savedTheme = localStorage.getItem(STORAGE_THEME); if (savedTheme === 'light') currentTheme = 'light'; } catch (e) {}
+  function applyTheme(theme) {
+    currentTheme = theme;
+    document.body.classList.toggle('theme-light', theme === 'light');
+    var btn = document.getElementById('themeToggleBtn');
+    if (btn) btn.textContent = theme === 'light' ? '☀️' : '🌙';
+    try { localStorage.setItem(STORAGE_THEME, theme); } catch (e) {}
+  }
+  function courseLabel(round) {
+    var club = round.club || round.course || '';
+    var variant = round.courseVariant || '';
+    if (club && variant) return club + ' — ' + variant;
+    return club || variant || '';
+  }
+  function defaultRound(holesCount) {
+    holesCount = holesCount || 9;
+    HOLES = holesCount;
+    parPerHole = defaultParPerHole(holesCount);
+    return {
+      club: '',
+      players: ['', ''],
+      handicaps: ['', ''],
+      extras: ['', ''],
+      genders: ['', ''],
+      holesCount: holesCount,
+      parPerHole: parPerHole.slice(),
+      strokeIndex: defaultStrokeIndex(),
+      scoringMode: 'stroke',
+      date: todayISO(),
+      startTime: nowHM(),
+      scores: [Array(HOLES).fill(''), Array(HOLES).fill('')]
+    };
+  }
+  function syncHolesFromState() {
+    HOLES = state.holesCount || 9;
+    parPerHole = (state.parPerHole && state.parPerHole.length === HOLES) ? state.parPerHole : defaultParPerHole(HOLES);
+    state.parPerHole = parPerHole;
+  }
+
+  function buildLog(round) {
+    var date = round.date, startTime = round.startTime, players = round.players, scores = round.scores;
+    var label = courseLabel(round);
+    var roundHoles = round.holesCount || 9;
+    var roundPar = (round.parPerHole && round.parPerHole.length === roundHoles) ? round.parPerHole : defaultParPerHole(roundHoles);
+    var roundTotalPar = roundPar.reduce(function (a, v) { return a + v; }, 0);
+    var strokeIndex = (round.strokeIndex && round.strokeIndex.length === roundHoles) ? round.strokeIndex : defaultStrokeIndexFor(roundHoles);
+    var extras = round.extras || [];
+    var handicaps = round.handicaps || [];
+    var hasHcp = extras.some(function (e) { return Number(e) > 0; });
+    var ranks = computeStrokeRanksFor(strokeIndex, roundHoles);
+    var roundStableford = round.scoringMode === 'stableford';
+    var colWidth = 11;
+    var lines = [];
+    lines.push('GOLFRUNDA — ' + roundHoles + ' HÅL, PAR ' + roundTotalPar);
+    if (label) lines.push(t('log_club_label') + label);
+    lines.push(t('log_date_label') + date + '    ' + t('time_label') + ': ' + startTime);
+    if (hasHcp) {
+      var hcpInfo = players.map(function (name, i) {
+        var hc = handicaps[i] ? handicaps[i] : '-';
+        var ex = Number(extras[i]) || 0;
+        return (name || (playerLabel(i))) + ': HCP ' + hc + ', ' + ex + ' ' + t('summary_strokes_suffix');
+      }).join('  ·  ');
+      lines.push(hcpInfo);
+    }
+    lines.push('');
+    var idxColWidth = hasHcp ? 6 : 0;
+    var header = pad(t('log_hole_label'), 8) + pad('PAR', 6) + (hasHcp ? pad('IDX', idxColWidth) : '');
+    players.forEach(function (name, i) { header += pad(name || (playerLabel(i)), colWidth); });
+    lines.push(header);
+    lines.push('-'.repeat(14 + idxColWidth + colWidth * players.length));
+    for (var h = 0; h < roundHoles; h++) {
+      var row = pad(h + 1, 8) + pad(roundPar[h], 6) + (hasHcp ? pad(strokeIndex[h], idxColWidth) : '');
+      players.forEach(function (name, p) {
+        var v = scores[p][h] === '' ? '-' : scores[p][h];
+        var strokes = hasHcp ? strokesOnHole(extras[p], ranks[h], roundHoles) : 0;
+        if (strokes > 0 && v !== '-') v += '*'.repeat(strokes);
+        row += pad(v, colWidth);
+      });
+      lines.push(row);
+    }
+    lines.push('-'.repeat(14 + idxColWidth + colWidth * players.length));
+    var totalRow = pad(t('log_total_label'), 8) + pad(roundTotalPar, 6) + (hasHcp ? pad('', idxColWidth) : '');
+    var relRow = pad(t('log_vspar_label'), 8) + pad('', 6) + (hasHcp ? pad('', idxColWidth) : '');
+    players.forEach(function (name, p) {
+      var sum = sumArr(scores[p]);
+      var played = playedCount(scores[p]);
+      totalRow += pad(sum, colWidth);
+      relRow += pad(played ? diffLabel(sum - sumParForPlayed(scores[p], roundPar)) : '-', colWidth);
+    });
+    lines.push(totalRow);
+    lines.push(relRow);
+    if (roundStableford) {
+      var pointsRow = pad(t('points_th').toUpperCase(), 8) + pad('', 6) + (hasHcp ? pad('', idxColWidth) : '');
+      players.forEach(function (name, p) {
+        var played = playedCount(scores[p]);
+        var pts = null;
+        if (played) {
+          pts = 0;
+          var extraP = Number(extras[p]) || 0;
+          for (var hp = 0; hp < roundHoles; hp++) {
+            var vp = scores[p][hp];
+            if (vp === '' || vp == null) continue;
+            var npp = roundPar[hp] + strokesOnHole(extraP, ranks[hp], roundHoles);
+            pts += stablefordPoints(vp, npp);
+          }
+        }
+        pointsRow += pad(pts == null ? '-' : pts, colWidth);
+      });
+      lines.push(pointsRow);
+    }
+    if (hasHcp) {
+      var nettoRow = pad(t('log_netto_label'), 8) + pad('', 6) + pad('', idxColWidth);
+      players.forEach(function (name, p) {
+        var sum = sumArr(scores[p]);
+        var played = playedCount(scores[p]);
+        var extra = Number(extras[p]) || 0;
+        var netParTotal = 0;
+        for (var h2 = 0; h2 < HOLES; h2++) {
+          if (scores[p][h2] !== '' && scores[p][h2] != null) netParTotal += netParForHole(strokeIndex, extra, h2);
+        }
+        nettoRow += pad(played ? diffLabel(sum - netParTotal) : '-', colWidth);
+      });
+      lines.push(nettoRow);
+      lines.push('(* = extra slag på hålet, netto = resultat mot personligt par)');
+    }
+    lines.push('');
+    lines.push(t('log_logged_label') + new Date().toISOString().slice(0, 16).replace('T', ' '));
+    return lines.join('\n');
+  }
+
+  // ---- state ----
+  var state = defaultRound();
+  var roundHistory = [];
+  var focusedHole = 0;
+  var currentScoreCell = null; // { p, h }
+  var scoreInputs = []; // scoreInputs[p][h]
+
+  // ---- load persisted ----
+  try {
+    var savedRound = localStorage.getItem(STORAGE_ROUND);
+    if (savedRound) {
+      var r = JSON.parse(savedRound);
+      state.holesCount = (r.holesCount === 9 || r.holesCount === 18) ? r.holesCount : 9;
+      HOLES = state.holesCount;
+      state.parPerHole = (r.parPerHole && r.parPerHole.length === HOLES) ? r.parPerHole : defaultParPerHole(HOLES);
+      parPerHole = state.parPerHole;
+      if (r.players && r.players.length) state.players = r.players;
+      if (r.date) state.date = r.date;
+      if (r.startTime) state.startTime = r.startTime;
+      if (r.scores && r.scores.length === state.players.length && r.scores[0] && r.scores[0].length === HOLES) {
+        state.scores = r.scores;
+      } else {
+        state.scores = state.players.map(function () { return Array(HOLES).fill(''); });
+      }
+      if (typeof r.club === 'string') state.club = r.club;
+      else if (typeof r.course === 'string') state.club = r.course;
+      state.handicaps = (r.handicaps && r.handicaps.length === state.players.length) ? r.handicaps : state.players.map(function () { return ''; });
+      state.extras = (r.extras && r.extras.length === state.players.length) ? r.extras : state.players.map(function () { return ''; });
+      state.genders = (r.genders && r.genders.length === state.players.length) ? r.genders : state.players.map(function () { return ''; });
+      state.strokeIndex = (r.strokeIndex && r.strokeIndex.length === HOLES) ? r.strokeIndex : defaultStrokeIndex();
+      state.scoringMode = (r.scoringMode === 'stableford') ? 'stableford' : 'stroke';
+    }
+  } catch (e) {}
+  roundCompletionCelebrated = isRoundComplete();
+  try {
+    var savedHistory = localStorage.getItem(STORAGE_HISTORY);
+    if (savedHistory) roundHistory = JSON.parse(savedHistory);
+  } catch (e) {}
+  var playerProfiles = {};
+  try {
+    var savedProfiles = localStorage.getItem(STORAGE_PROFILES);
+    if (savedProfiles) playerProfiles = JSON.parse(savedProfiles);
+  } catch (e) {}
+
+  function persistRound() {
+    try { localStorage.setItem(STORAGE_ROUND, JSON.stringify(state)); } catch (e) {}
+  }
+  function persistHistory() {
+    try { localStorage.setItem(STORAGE_HISTORY, JSON.stringify(roundHistory)); } catch (e) {}
+  }
+  function profileKey(name) { return (name || '').trim().toLowerCase(); }
+  function saveProfileForPlayer(name, handicap, gender) {
+    var key = profileKey(name);
+    if (!key) return;
+    var existing = playerProfiles[key];
+    var hcpToStore = handicap || (existing ? existing.handicap : '') || '';
+    var genderToStore = gender || (existing ? existing.gender : '') || '';
+    playerProfiles[key] = { displayName: (name || '').trim(), handicap: hcpToStore, gender: genderToStore, updatedAt: new Date().toISOString() };
+    try { localStorage.setItem(STORAGE_PROFILES, JSON.stringify(playerProfiles)); } catch (e) {}
+  }
+  function lookupProfile(name) {
+    return playerProfiles[profileKey(name)] || null;
+  }
+  function renderKnownPlayersList() {
+    var list = document.getElementById('knownPlayers');
+    if (!list) return;
+    list.innerHTML = '';
+    Object.keys(playerProfiles).forEach(function (key) {
+      var opt = document.createElement('option');
+      opt.value = playerProfiles[key].displayName;
+      list.appendChild(opt);
+    });
+  }
+
+  // ---- DOM refs ----
+  var dateInput = document.getElementById('date');
+  var timeInput = document.getElementById('time');
+  var clubInput = document.getElementById('club');
+  var clubResultsSelect = document.getElementById('clubResults');
+  var courseStatus = document.getElementById('courseStatus');
+  var locateBtn = document.getElementById('locateBtn');
+  var playersFields = document.getElementById('playersFields');
+  var addPlayerBtn = document.getElementById('addPlayerBtn');
+  var headRow = document.getElementById('headRow');
+  var parRow = document.getElementById('parRow');
+  var hcpRow = document.getElementById('hcpRow');
+  var playerRows = document.getElementById('playerRows');
+  var historyBody = document.getElementById('historyBody');
+  var historyCount = document.getElementById('historyCount');
+  var historyFilterRow = document.getElementById('historyFilterRow');
+  var courseFilter = document.getElementById('courseFilter');
+  var statsEmpty = document.getElementById('statsEmpty');
+  var statsContent = document.getElementById('statsContent');
+  var trendChart = document.getElementById('trendChart');
+  var trendLegend = document.getElementById('trendLegend');
+  var courseChart = document.getElementById('courseChart');
+  var toast = document.getElementById('toast');
+
+  var hcpIndexInputs = [];
+
+  var parIndexInputs = [];
+  function rebuildHoleColumns() {
+    // remove previously-built hole cells (keep the first rowlabel cell and the last total cell)
+    while (headRow.children.length > 2) headRow.removeChild(headRow.children[1]);
+    while (parRow.children.length > 2) parRow.removeChild(parRow.children[1]);
+    while (hcpRow.children.length > 2) hcpRow.removeChild(hcpRow.children[1]);
+    hcpIndexInputs = [];
+    parIndexInputs = [];
+
+    for (var h = 0; h < HOLES; h++) {
+      var th = document.createElement('th');
+      th.innerHTML = '<span class="hole-marker" data-hole="' + h + '">' + (h + 1) + '</span>';
+      headRow.insertBefore(th, headRow.lastElementChild);
+
+      (function (h) {
+        var parTd = document.createElement('td');
+        var parInput = document.createElement('input');
+        parInput.className = 'parinput';
+        parInput.type = 'text';
+        parInput.inputMode = 'numeric';
+        parInput.value = parAt(h);
+        parInput.setAttribute('aria-label', t('par_row_label') + ' ' + t('hole_th') + ' ' + (h + 1));
+        parInput.addEventListener('input', function (e) {
+          var v = e.target.value.replace(/[^0-9]/g, '').slice(0, 1);
+          parPerHole[h] = v === '' ? 3 : Number(v);
+          state.parPerHole = parPerHole;
+          persistRound();
+          render();
+        });
+        parTd.appendChild(parInput);
+        parRow.insertBefore(parTd, parRow.lastElementChild);
+        parIndexInputs[h] = parInput;
+      })(h);
+
+      (function (h) {
+        var hcpTd = document.createElement('td');
+        var hcpInput = document.createElement('input');
+        hcpInput.className = 'hcpindex';
+        hcpInput.type = 'text';
+        hcpInput.inputMode = 'numeric';
+        hcpInput.value = state.strokeIndex[h];
+        hcpInput.setAttribute('aria-label', 'Slagindex hål ' + (h + 1));
+        hcpInput.addEventListener('input', function (e) {
+          var v = e.target.value.replace(/[^0-9]/g, '').slice(0, 2);
+          state.strokeIndex[h] = v === '' ? '' : Number(v);
+          render();
+        });
+        hcpTd.appendChild(hcpInput);
+        hcpRow.insertBefore(hcpTd, hcpRow.lastElementChild);
+        hcpIndexInputs[h] = hcpInput;
+      })(h);
+    }
+    document.getElementById('parTotalLabel').textContent = totalPar();
+    document.getElementById('parTotalCell').textContent = totalPar();
+  }
+  rebuildHoleColumns();
+
+  function buildOrder() {
+    var order = [];
+    for (var hh = 0; hh < HOLES; hh++) {
+      for (var pp = 0; pp < state.players.length; pp++) {
+        order.push({ p: pp, h: hh });
+      }
+    }
+    return order;
+  }
+
+  function advanceToNextCell(p, h) {
+    var order = buildOrder();
+    var idx = order.findIndex(function (o) { return o.p === p && o.h === h; });
+    var next = order[idx + 1];
+    if (next) {
+      var el = scoreInputs[next.p][next.h];
+      if (el) { el.focus(); el.select(); }
+    } else {
+      var cur = scoreInputs[p] && scoreInputs[p][h];
+      if (cur) cur.blur();
+    }
+  }
+
+  var quickBarHideTimer = null;
+
+  function positionQuickEntryBar() {
+    var bar = document.getElementById('quickEntryBar');
+    if (!bar) return;
+    if (window.visualViewport) {
+      var vv = window.visualViewport;
+      var offset = Math.max(0, window.innerHeight - (vv.height + vv.offsetTop));
+      bar.style.bottom = offset + 'px';
+    } else {
+      bar.style.bottom = '0px';
+    }
+  }
+
+  function showQuickEntryBar() {
+    if (quickBarHideTimer) { clearTimeout(quickBarHideTimer); quickBarHideTimer = null; }
+    var bar = document.getElementById('quickEntryBar');
+    if (bar) bar.classList.add('show');
+    positionQuickEntryBar();
+    // keyboard/viewport takes a moment to settle on iOS, so re-check a few times
+    setTimeout(positionQuickEntryBar, 60);
+    setTimeout(positionQuickEntryBar, 250);
+    setTimeout(positionQuickEntryBar, 500);
+  }
+  function scheduleHideQuickEntryBar() {
+    if (quickBarHideTimer) clearTimeout(quickBarHideTimer);
+    quickBarHideTimer = setTimeout(function () {
+      var bar = document.getElementById('quickEntryBar');
+      if (bar) bar.classList.remove('show');
+      currentScoreCell = null;
+      quickBarHideTimer = null;
+    }, 250);
+  }
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', positionQuickEntryBar);
+    window.visualViewport.addEventListener('scroll', positionQuickEntryBar);
+  }
+
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(function () { toast.classList.remove('show'); }, 2200);
+  }
+
+  function updateFlag() {
+    document.querySelectorAll('.hole-marker').forEach(function (f) {
+      f.classList.toggle('hole-marker-active', Number(f.getAttribute('data-hole')) === focusedHole);
+    });
+    if (currentMapSlug && mapHoleSelect && mapHoleSelect.value != focusedHole + 1) {
+      mapHoleSelect.value = focusedHole + 1;
+      if (mapGuidePanel.open) loadMapImages();
+    }
+  }
+
+  // ---- rebuild player name fields (meta card) ----
+  function renderPlayerFields() {
+    playersFields.innerHTML = '';
+    state.players.forEach(function (name, p) {
+      var row = document.createElement('div');
+      row.className = 'player-row-field';
+
+      var dot = document.createElement('span');
+      dot.className = 'swatch-dot';
+      dot.style.background = PLAYER_COLORS[p % PLAYER_COLORS.length];
+      row.appendChild(dot);
+
+      var input = document.createElement('input');
+      input.type = 'text';
+      input.value = name;
+      input.placeholder = playerLabel(p);
+      input.setAttribute('list', 'knownPlayers');
+      input.setAttribute('aria-label', t('aria_player_name', { n: p + 1 }));
+      input.addEventListener('input', function (e) {
+        state.players[p] = e.target.value;
+        renderNameCells();
+        render();
+      });
+      input.addEventListener('blur', function (e) {
+        var typedName = e.target.value;
+        var profile = lookupProfile(typedName);
+        if (profile) {
+          var filledSomething = false;
+          if (!state.handicaps[p] && profile.handicap) {
+            state.handicaps[p] = profile.handicap;
+            var hcpEl = document.getElementById('hcp' + p);
+            if (hcpEl) hcpEl.value = profile.handicap;
+            filledSomething = true;
+          }
+          if (!state.genders[p] && profile.gender) {
+            state.genders[p] = profile.gender;
+            var genderEl = document.getElementById('gender' + p);
+            if (genderEl) genderEl.value = profile.gender;
+            filledSomething = true;
+          }
+          if (filledSomething) {
+            persistRound();
+            render();
+            showToast(t('toast_hcp_autofilled', { name: profile.displayName }));
+            autoCalcExtraForPlayer(p, true);
+          }
+        }
+        // remember the name itself even if nothing else was entered, so it shows up
+        // as an autocomplete suggestion and can be recognized next round
+        saveProfileForPlayer(typedName, state.handicaps[p], state.genders[p]);
+        renderKnownPlayersList();
+      });
+      row.appendChild(input);
+
+      var removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'remove-player-btn';
+      removeBtn.textContent = '×';
+      removeBtn.setAttribute('aria-label', t('aria_remove_player', { n: p + 1 }));
+      removeBtn.disabled = state.players.length <= MIN_PLAYERS;
+      removeBtn.addEventListener('click', function () {
+        if (state.players.length <= MIN_PLAYERS) return;
+        state.players.splice(p, 1);
+        state.scores.splice(p, 1);
+        state.handicaps.splice(p, 1);
+        state.extras.splice(p, 1);
+        state.genders.splice(p, 1);
+        rebuildPlayerRows();
+        renderPlayerFields();
+        render();
+        showToast(t('toast_player_removed'));
+      });
+      row.appendChild(removeBtn);
+
+      playersFields.appendChild(row);
+
+      var extraRow = document.createElement('div');
+      extraRow.className = 'player-extra-row';
+
+      var hcpLabel = document.createElement('label');
+      hcpLabel.textContent = 'HCP';
+      hcpLabel.setAttribute('for', 'hcp' + p);
+      extraRow.appendChild(hcpLabel);
+
+      function autoCalcExtra(silent) { autoCalcExtraForPlayer(p, silent); }
+
+      var hcpInput = document.createElement('input');
+      hcpInput.type = 'text';
+      hcpInput.inputMode = 'decimal';
+      hcpInput.id = 'hcp' + p;
+      hcpInput.placeholder = '—';
+      hcpInput.value = state.handicaps[p] || '';
+      hcpInput.addEventListener('input', function (e) {
+        state.handicaps[p] = e.target.value.replace(/[^0-9.,]/g, '');
+        persistRound();
+        saveProfileForPlayer(state.players[p], state.handicaps[p], state.genders[p]);
+        renderKnownPlayersList();
+      });
+      hcpInput.addEventListener('blur', function () { autoCalcExtra(true); });
+      extraRow.appendChild(hcpInput);
+
+      var genderLabel = document.createElement('label');
+      genderLabel.textContent = t('gender_label');
+      genderLabel.setAttribute('for', 'gender' + p);
+      extraRow.appendChild(genderLabel);
+
+      var genderSelect = document.createElement('select');
+      genderSelect.id = 'gender' + p;
+      genderSelect.className = 'gender-select';
+      genderSelect.setAttribute('aria-label', t('aria_player_gender', { n: p + 1 }));
+      ['', 'M', 'K'].forEach(function (g) {
+        var opt = document.createElement('option');
+        opt.value = g;
+        opt.textContent = g === '' ? '—' : g;
+        genderSelect.appendChild(opt);
+      });
+      genderSelect.value = state.genders[p] || '';
+      genderSelect.addEventListener('change', function (e) {
+        state.genders[p] = e.target.value;
+        persistRound();
+        saveProfileForPlayer(state.players[p], state.handicaps[p], state.genders[p]);
+        renderKnownPlayersList();
+        autoCalcExtra(true);
+      });
+      extraRow.appendChild(genderSelect);
+
+      var exLabel = document.createElement('label');
+      exLabel.textContent = t('extra_label');
+      exLabel.setAttribute('for', 'extra' + p);
+      extraRow.appendChild(exLabel);
+
+      var exInput = document.createElement('input');
+      exInput.type = 'text';
+      exInput.inputMode = 'numeric';
+      exInput.id = 'extra' + p;
+      exInput.placeholder = '0';
+      exInput.value = state.extras[p] || '';
+      exInput.addEventListener('input', function (e) {
+        state.extras[p] = e.target.value.replace(/[^0-9]/g, '').slice(0, 2);
+        render();
+      });
+      extraRow.appendChild(exInput);
+
+      var calcBtn = document.createElement('button');
+      calcBtn.type = 'button';
+      calcBtn.className = 'calc-btn';
+      calcBtn.textContent = '🧮';
+      calcBtn.title = t('calc_btn_title');
+      calcBtn.addEventListener('click', function () { autoCalcExtra(false); });
+      extraRow.appendChild(calcBtn);
+
+      playersFields.appendChild(extraRow);
+    });
+    addPlayerBtn.disabled = state.players.length >= MAX_PLAYERS;
+  }
+
+  function renderNameCells() {
+    state.players.forEach(function (name, p) {
+      var cell = document.getElementById('nameCell' + p);
+      if (cell) cell.textContent = name || (playerLabel(p));
+    });
+  }
+
+  // ---- rebuild player rows in the score table (structure only) ----
+  function rebuildPlayerRows() {
+    playerRows.innerHTML = '';
+    scoreInputs = [];
+    state.players.forEach(function (name, p) {
+      scoreInputs[p] = [];
+      var tr = document.createElement('tr');
+      tr.className = 'player-row';
+
+      var nameTd = document.createElement('td');
+      nameTd.className = 'name-cell';
+      nameTd.id = 'nameCell' + p;
+      nameTd.textContent = name || (playerLabel(p));
+      nameTd.style.color = PLAYER_COLORS[p % PLAYER_COLORS.length];
+      tr.appendChild(nameTd);
+
+      for (var h = 0; h < HOLES; h++) {
+        (function (p, h) {
+          var td = document.createElement('td');
+          td.className = 'cell';
+          var input = document.createElement('input');
+          input.className = 'scoreinput';
+          input.type = 'text';
+          input.inputMode = 'none';
+          input.setAttribute('readonly', 'readonly');
+          input.setAttribute('data-p', p);
+          input.setAttribute('data-h', h);
+          input.addEventListener('input', function (e) {
+            var clean = e.target.value.replace(/[^0-9]/g, '').slice(0, 2);
+            state.scores[p][h] = clean;
+            render();
+            if (clean !== '') {
+              var extraFb = Number(state.extras[p]) || 0;
+              var npFb = netParForHole(state.strokeIndex, extraFb, h);
+              playScoreFeedback(scoreClass(clean, npFb));
+              if (clean === '1') celebrateHoleInOne();
+              checkRoundComplete();
+            }
+          });
+          input.addEventListener('focus', function () {
+            focusedHole = h;
+            currentScoreCell = { p: p, h: h };
+            updateFlag();
+            showQuickEntryBar();
+          });
+          input.addEventListener('blur', function () {
+            scheduleHideQuickEntryBar();
+          });
+          input.addEventListener('keydown', function (e) {
+            if (e.key !== 'Enter') return;
+            e.preventDefault();
+            advanceToNextCell(p, h);
+          });
+          td.appendChild(input);
+          var dotsSpan = document.createElement('span');
+          dotsSpan.className = 'stroke-dots';
+          dotsSpan.id = 'dots' + p + '_' + h;
+          td.appendChild(dotsSpan);
+          tr.appendChild(td);
+          scoreInputs[p][h] = input;
+        })(p, h);
+      }
+
+      var totalTd = document.createElement('td');
+      totalTd.className = 'total-cell';
+      totalTd.id = 'totalCell' + p;
+      tr.appendChild(totalTd);
+
+      playerRows.appendChild(tr);
+
+      // companion net-score row, shown only when this player has extra strokes
+      var nettoTr = document.createElement('tr');
+      nettoTr.className = 'netto-row';
+      nettoTr.id = 'nettoRow' + p;
+      nettoTr.style.display = 'none';
+      var nettoLabelTd = document.createElement('td');
+      nettoLabelTd.className = 'rowlabel netto-label';
+      nettoLabelTd.id = 'nettoLabel' + p;
+      nettoLabelTd.textContent = t('netto_label');
+      nettoTr.appendChild(nettoLabelTd);
+      for (var hn = 0; hn < HOLES; hn++) {
+        var nettoTd = document.createElement('td');
+        nettoTd.id = 'nettoCell' + p + '_' + hn;
+        nettoTr.appendChild(nettoTd);
+      }
+      var nettoTotalTd = document.createElement('td');
+      nettoTotalTd.id = 'nettoTotalCell' + p;
+      nettoTotalTd.className = 'netto-total-cell';
+      nettoTr.appendChild(nettoTotalTd);
+      playerRows.appendChild(nettoTr);
+    });
+  }
+
+  function render() {
+    dateInput.value = state.date;
+    timeInput.value = state.startTime;
+    if (document.activeElement !== clubInput) clubInput.value = state.club || '';
+    var totalHeader = document.getElementById('totalColHeader');
+    if (totalHeader) totalHeader.textContent = state.scoringMode === 'stableford' ? t('points_th') : t('total_th');
+
+    for (var hi = 0; hi < HOLES; hi++) {
+      if (hcpIndexInputs[hi] && document.activeElement !== hcpIndexInputs[hi]) {
+        hcpIndexInputs[hi].value = state.strokeIndex[hi];
+      }
+    }
+
+    var ranks = computeStrokeRanks(state.strokeIndex);
+    state.players.forEach(function (name, p) {
+      var extra = Number(state.extras[p]) || 0;
+      for (var h = 0; h < HOLES; h++) {
+        var val = state.scores[p][h];
+        var input = scoreInputs[p] && scoreInputs[p][h];
+        if (!input) return;
+        if (input.value !== val) input.value = val;
+        var np = netParForHole(state.strokeIndex, extra, h);
+        var cls = scoreClass(val, np);
+        input.parentElement.className = 'cell' + (cls ? ' ' + cls : '');
+        var strokes = strokesOnHole(extra, ranks[h]);
+        var dotsSpan = document.getElementById('dots' + p + '_' + h);
+        if (dotsSpan) {
+          dotsSpan.innerHTML = '';
+          for (var s = 0; s < strokes; s++) dotsSpan.appendChild(document.createElement('span'));
+        }
+      }
+      var sum = sumArr(state.scores[p]);
+      var played = playedCount(state.scores[p]);
+      var totalCell = document.getElementById('totalCell' + p);
+      var netParTotal = 0;
+      for (var h3 = 0; h3 < HOLES; h3++) {
+        if (state.scores[p][h3] !== '' && state.scores[p][h3] != null) {
+          netParTotal += netParForHole(state.strokeIndex, extra, h3);
+        }
+      }
+      if (totalCell) {
+        var html;
+        if (state.scoringMode === 'stableford') {
+          var points = sumStablefordForPlayer(state.scores[p], state.strokeIndex, extra, parPerHole);
+          html = (played > 0 ? points : '–') + (played > 0 ? '<div class="relpar">' + sum + ' ' + t('summary_strokes_suffix') + '</div>' : '');
+        } else {
+          html = sum + (played > 0 ? '<div class="relpar">' + diffLabel(sum - sumParForPlayed(state.scores[p], parPerHole)) + '</div>' : '');
+          if (extra > 0 && played > 0) {
+            html += '<div class="relpar" style="color:#2f5233;">' + t('netto_label') + ' ' + diffLabel(sum - netParTotal) + '</div>';
+          }
+        }
+        totalCell.innerHTML = html;
+      }
+
+      var nettoRow = document.getElementById('nettoRow' + p);
+      if (nettoRow) {
+        var showRow = extra > 0 || state.scoringMode === 'stableford';
+        if (showRow) {
+          nettoRow.style.display = '';
+          var nettoLabelEl = document.getElementById('nettoLabel' + p);
+          if (nettoLabelEl) nettoLabelEl.textContent = state.scoringMode === 'stableford' ? t('points_th') : t('netto_label');
+          for (var h4 = 0; h4 < HOLES; h4++) {
+            var nc = document.getElementById('nettoCell' + p + '_' + h4);
+            if (!nc) continue;
+            var v4 = state.scores[p][h4];
+            if (v4 === '' || v4 == null) { nc.textContent = ''; continue; }
+            var np4 = netParForHole(state.strokeIndex, extra, h4);
+            if (state.scoringMode === 'stableford') {
+              nc.textContent = stablefordPoints(v4, np4);
+            } else {
+              nc.textContent = diffLabel(Number(v4) - np4);
+            }
+          }
+          var ntc = document.getElementById('nettoTotalCell' + p);
+          if (ntc) {
+            if (state.scoringMode === 'stableford') {
+              ntc.textContent = played > 0 ? sumStablefordForPlayer(state.scores[p], state.strokeIndex, extra, parPerHole) : '';
+            } else {
+              ntc.textContent = played > 0 ? diffLabel(sum - netParTotal) : '';
+            }
+          }
+        } else {
+          nettoRow.style.display = 'none';
+        }
+      }
+    });
+
+    renderLeaderBanner();
+    updateFlag();
+    persistRound();
+  }
+
+  function renderLeaderBanner() {
+    var banner = document.getElementById('leaderBanner');
+    if (!banner) return;
+    var stableford = state.scoringMode === 'stableford';
+    var contenders = state.players.map(function (name, p) {
+      var extra = Number(state.extras[p]) || 0;
+      var played = playedCount(state.scores[p]);
+      if (played === 0) return null;
+      var sum = sumArr(state.scores[p]);
+      if (stableford) {
+        var points = sumStablefordForPlayer(state.scores[p], state.strokeIndex, extra, parPerHole);
+        return { name: name || (playerLabel(p)), played: played, metric: points };
+      }
+      var diff;
+      if (extra > 0) {
+        var netParTotal = 0;
+        for (var h = 0; h < HOLES; h++) {
+          if (state.scores[p][h] !== '' && state.scores[p][h] != null) {
+            netParTotal += netParForHole(state.strokeIndex, extra, h);
+          }
+        }
+        diff = sum - netParTotal;
+      } else {
+        diff = sum - sumParForPlayed(state.scores[p], parPerHole);
+      }
+      return { name: name || (playerLabel(p)), played: played, metric: diff };
+    }).filter(Boolean);
+
+    if (contenders.length === 0) {
+      banner.style.display = 'none';
+      return;
+    }
+    var bestMetric = stableford
+      ? Math.max.apply(null, contenders.map(function (c) { return c.metric; }))
+      : Math.min.apply(null, contenders.map(function (c) { return c.metric; }));
+    var leaders = contenders.filter(function (c) { return c.metric === bestMetric; });
+    var maxPlayed = Math.max.apply(null, contenders.map(function (c) { return c.played; }));
+    var metricLabel = stableford ? (bestMetric + ' ' + t('points_short')) : diffLabel(bestMetric);
+
+    banner.style.display = 'flex';
+    if (leaders.length === contenders.length && contenders.length > 1) {
+      banner.innerHTML = '<span class="leader-icon">⛳</span> ' + t('leader_even', { diff: metricLabel, holes: maxPlayed });
+    } else if (leaders.length > 1) {
+      banner.innerHTML = '<span class="leader-icon">🏆</span> ' + t('leader_shared', { names: leaders.map(function (l) { return l.name; }).join(' & '), diff: metricLabel });
+    } else {
+      banner.innerHTML = '<span class="leader-icon">🏆</span> ' + t('leader_single', { name: leaders[0].name, diff: metricLabel, holes: leaders[0].played });
+    }
+  }
+
+  var courseFilterValue = '__all__';
+
+  function courseKey(r) { var label = r.club || r.course; return (label && label.trim()) || t('unknown_club'); }
+
+  function renderCourseFilterOptions() {
+    var courses = Array.from(new Set(roundHistory.map(courseKey)));
+    courses.sort(function (a, b) { return a.localeCompare(b, 'sv'); });
+    historyFilterRow.style.display = courses.length > 1 ? 'flex' : 'none';
+    var prev = courseFilterValue;
+    courseFilter.innerHTML = '';
+    var allOpt = document.createElement('option');
+    allOpt.value = '__all__';
+    allOpt.textContent = t('filter_all_courses');
+    courseFilter.appendChild(allOpt);
+    courses.forEach(function (c) {
+      var opt = document.createElement('option');
+      opt.value = c;
+      opt.textContent = c;
+      courseFilter.appendChild(opt);
+    });
+    courseFilterValue = courses.indexOf(prev) !== -1 || prev === '__all__' ? prev : '__all__';
+    courseFilter.value = courseFilterValue;
+  }
+
+  function collectPlayerTrendSeries() {
+    var entries = []; // { date, savedAt, name, diff }
+    roundHistory.forEach(function (r) {
+      var rHoles = r.holesCount || 9;
+      var rPar = (r.parPerHole && r.parPerHole.length === rHoles) ? r.parPerHole : defaultParPerHole(rHoles);
+      var rTotalPar = rPar.reduce(function (a, v) { return a + v; }, 0);
+      r.players.forEach(function (name, p) {
+        if (playedCount(r.scores[p]) === rHoles) {
+          entries.push({
+            date: r.date,
+            savedAt: r.savedAt || r.date,
+            name: name || (playerLabel(p)),
+            diff: sumArr(r.scores[p]) - rTotalPar
+          });
+        }
+      });
+    });
+    entries.sort(function (a, b) { return (a.date + a.savedAt).localeCompare(b.date + b.savedAt); });
+
+    var byName = {};
+    var nameOrder = [];
+    entries.forEach(function (e) {
+      if (!byName[e.name]) { byName[e.name] = []; nameOrder.push(e.name); }
+      byName[e.name].push(e.diff);
+    });
+    // keep the 4 names with the most played rounds
+    nameOrder.sort(function (a, b) { return byName[b].length - byName[a].length; });
+    nameOrder = nameOrder.slice(0, 4);
+
+    return nameOrder.map(function (name, i) {
+      return { name: name, color: PLAYER_COLORS[i % PLAYER_COLORS.length], values: byName[name].slice(-15) };
+    });
+  }
+
+  function collectCourseAverages() {
+    var groups = {};
+    var order = [];
+    roundHistory.forEach(function (r) {
+      var key = courseKey(r);
+      var rHoles = r.holesCount || 9;
+      var rPar = (r.parPerHole && r.parPerHole.length === rHoles) ? r.parPerHole : defaultParPerHole(rHoles);
+      var rTotalPar = rPar.reduce(function (a, v) { return a + v; }, 0);
+      var completed = r.scores.filter(function (arr) { return playedCount(arr) === rHoles; });
+      if (completed.length === 0) return;
+      var best = Math.min.apply(null, completed.map(sumArr)) - rTotalPar;
+      if (!groups[key]) { groups[key] = []; order.push(key); }
+      groups[key].push(best);
+    });
+    order.sort(function (a, b) { return groups[b].length - groups[a].length; });
+    order = order.slice(0, 6);
+    return order.map(function (key) {
+      var vals = groups[key];
+      var avg = vals.reduce(function (a, b) { return a + b; }, 0) / vals.length;
+      return { label: key, avg: avg, count: vals.length };
+    });
+  }
+
+  function setupCanvasDPR(canvas) {
+    var dpr = window.devicePixelRatio || 1;
+    var cssW = canvas.clientWidth || canvas.width;
+    var cssH = canvas.clientHeight || canvas.height;
+    canvas.width = cssW * dpr;
+    canvas.height = cssH * dpr;
+    var ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx: ctx, w: cssW, h: cssH };
+  }
+
+  function drawTrendChart(canvas, series) {
+    var setup = setupCanvasDPR(canvas);
+    var ctx = setup.ctx, w = setup.w, h = setup.h;
+    ctx.clearRect(0, 0, w, h);
+    var padL = 34, padR = 12, padT = 12, padB = 20;
+    var plotW = w - padL - padR, plotH = h - padT - padB;
+
+    var allValues = [0];
+    series.forEach(function (s) { s.values.forEach(function (v) { allValues.push(v); }); });
+    var maxAbs = Math.max(2, Math.max.apply(null, allValues.map(Math.abs)));
+    var yMin = -maxAbs, yMax = maxAbs;
+    var maxLen = Math.max.apply(null, series.map(function (s) { return s.values.length; }).concat([1]));
+
+    function yPix(v) { return padT + plotH - ((v - yMin) / (yMax - yMin)) * plotH; }
+    function xPix(i) { return maxLen <= 1 ? padL + plotW / 2 : padL + (i / (maxLen - 1)) * plotW; }
+
+    // zero line
+    ctx.strokeStyle = '#2b2b2b';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(padL, yPix(0));
+    ctx.lineTo(padL + plotW, yPix(0));
+    ctx.stroke();
+    ctx.fillStyle = '#6b6552';
+    ctx.font = '10px IBM Plex Mono, monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText('Par', padL - 4, yPix(0) + 3);
+    ctx.fillText('+' + Math.round(maxAbs), padL - 4, yPix(yMax) + 8);
+    ctx.fillText('-' + Math.round(maxAbs), padL - 4, yPix(yMin) - 2);
+
+    series.forEach(function (s) {
+      if (s.values.length === 0) return;
+      ctx.strokeStyle = s.color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      s.values.forEach(function (v, i) {
+        var x = xPix(i), y = yPix(v);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+      s.values.forEach(function (v, i) {
+        ctx.fillStyle = s.color;
+        ctx.beginPath();
+        ctx.arc(xPix(i), yPix(v), 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    });
+  }
+
+  function drawCourseChart(canvas, data) {
+    var setup = setupCanvasDPR(canvas);
+    var ctx = setup.ctx, w = setup.w, h = setup.h;
+    ctx.clearRect(0, 0, w, h);
+    if (data.length === 0) return;
+    var padL = 34, padR = 12, padT = 12, padB = 28;
+    var plotW = w - padL - padR, plotH = h - padT - padB;
+    var maxAbs = Math.max(2, Math.max.apply(null, data.map(function (d) { return Math.abs(d.avg); })));
+    var yMin = -maxAbs, yMax = maxAbs;
+    function yPix(v) { return padT + plotH - ((v - yMin) / (yMax - yMin)) * plotH; }
+    var zeroY = yPix(0);
+
+    ctx.strokeStyle = '#2b2b2b';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(padL, zeroY);
+    ctx.lineTo(padL + plotW, zeroY);
+    ctx.stroke();
+
+    var slot = plotW / data.length;
+    var barW = Math.min(34, slot * 0.5);
+    ctx.font = '9.5px IBM Plex Mono, monospace';
+    data.forEach(function (d, i) {
+      var cx = padL + slot * i + slot / 2;
+      var barY = yPix(d.avg);
+      var barTop = Math.min(barY, zeroY), height = Math.abs(barY - zeroY);
+      ctx.fillStyle = d.avg <= 0 ? '#2f5233' : '#b23a2e';
+      ctx.fillRect(cx - barW / 2, barTop, barW, Math.max(1, height));
+      ctx.fillStyle = '#6b6552';
+      ctx.textAlign = 'center';
+      var label = d.label.length > 10 ? d.label.slice(0, 9) + '…' : d.label;
+      ctx.fillText(label, cx, h - 8);
+      ctx.fillStyle = '#2b2b2b';
+      ctx.fillText(diffLabel(Math.round(d.avg)), cx, barY <= zeroY ? barTop - 4 : barTop + height + 12);
+    });
+  }
+
+  function computeSeasonSummary() {
+    var roundsCount = roundHistory.length;
+    var totalDiff = 0, diffCount = 0;
+    var birdieOrBetter = 0, holesPlayed = 0;
+    var best = null; // { diff, name, date, club }
+
+    roundHistory.forEach(function (r) {
+      var players = r.players || [];
+      var scores = r.scores || [];
+      var rHoles = r.holesCount || 9;
+      var rPar = (r.parPerHole && r.parPerHole.length === rHoles) ? r.parPerHole : defaultParPerHole(rHoles);
+      players.forEach(function (name, p) {
+        var arr = scores[p] || [];
+        var played = arr.filter(function (v) { return v !== '' && v != null; }).length;
+        if (played === 0) return;
+        var sum = arr.reduce(function (a, v) { return a + (Number(v) || 0); }, 0);
+        arr.forEach(function (v, h) {
+          if (v === '' || v == null) return;
+          holesPlayed++;
+          if (Number(v) <= (rPar[h] || 3) - 1) birdieOrBetter++;
+        });
+        var diff = sum - sumParForPlayed(arr, rPar);
+        totalDiff += diff;
+        diffCount++;
+        if (played === rHoles && (best === null || diff < best.diff)) {
+          best = { diff: diff, name: name || playerLabel(p), date: r.date, club: courseLabel(r) };
+        }
+      });
+    });
+
+    return {
+      roundsCount: roundsCount,
+      avgDiff: diffCount > 0 ? (totalDiff / diffCount) : null,
+      birdieOrBetter: birdieOrBetter,
+      holesPlayed: holesPlayed,
+      best: best
+    };
+  }
+
+  function renderSeasonSummary() {
+    var grid = document.getElementById('seasonGrid');
+    if (!grid) return;
+    var s = computeSeasonSummary();
+    var cards = [];
+    cards.push({ value: String(s.roundsCount), label: t('season_rounds') });
+    cards.push({
+      value: s.avgDiff == null ? '–' : diffLabel(Math.round(s.avgDiff * 10) / 10),
+      label: t('season_avg')
+    });
+    cards.push({
+      value: s.best ? diffLabel(s.best.diff) : '–',
+      label: s.best ? (t('season_best') + ' — ' + s.best.name + (s.best.club ? ' (' + s.best.club + ')' : '')) : t('season_best')
+    });
+    cards.push({ value: String(s.birdieOrBetter), label: t('season_birdies') + ' (' + s.holesPlayed + ' ' + t('season_holes_played') + ')' });
+
+    grid.innerHTML = '';
+    cards.forEach(function (c) {
+      var card = document.createElement('div');
+      card.className = 'season-card';
+      var val = document.createElement('div');
+      val.className = 'value';
+      val.textContent = c.value;
+      var lbl = document.createElement('div');
+      lbl.className = 'label';
+      lbl.textContent = c.label;
+      card.appendChild(val);
+      card.appendChild(lbl);
+      grid.appendChild(card);
+    });
+  }
+
+  function renderStats() {
+    var trendSeries = collectPlayerTrendSeries();
+    var courseData = collectCourseAverages();
+    var hasData = trendSeries.some(function (s) { return s.values.length > 0; }) || courseData.length > 0;
+
+    statsEmpty.style.display = hasData ? 'none' : 'block';
+    statsContent.style.display = hasData ? 'block' : 'none';
+    if (!hasData) return;
+
+    renderSeasonSummary();
+    drawTrendChart(trendChart, trendSeries);
+    trendLegend.innerHTML = '';
+    trendSeries.forEach(function (s) {
+      var span = document.createElement('span');
+      var dot = document.createElement('span');
+      dot.className = 'dot';
+      dot.style.background = s.color;
+      span.appendChild(dot);
+      span.appendChild(document.createTextNode(s.name + ' (' + s.values.length + ' rundor)'));
+      trendLegend.appendChild(span);
+    });
+
+    drawCourseChart(courseChart, courseData);
+  }
+
+  function renderHistory() {
+    historyCount.textContent = roundHistory.length;
+    renderCourseFilterOptions();
+    renderStats();
+
+    if (roundHistory.length === 0) {
+      historyBody.innerHTML = '<div class="empty-history">Inga sparade rundor än.</div>';
+      return;
+    }
+
+    var visible = courseFilterValue === '__all__'
+      ? roundHistory
+      : roundHistory.filter(function (r) { return courseKey(r) === courseFilterValue; });
+
+    if (visible.length === 0) {
+      historyBody.innerHTML = '<div class="empty-history">Inga rundor för den banan.</div>';
+      return;
+    }
+
+    // group by club
+    var groups = {};
+    var order = [];
+    visible.forEach(function (r) {
+      var key = courseKey(r);
+      if (!groups[key]) { groups[key] = []; order.push(key); }
+      groups[key].push(r);
+    });
+    order.sort(function (a, b) { return a.localeCompare(b, 'sv'); });
+
+    historyBody.innerHTML = '';
+    order.forEach(function (courseName) {
+      var rounds = groups[courseName];
+
+      // best total & average vs par across fully-played rounds for this course
+      var completed = rounds.filter(function (r) {
+        var rHoles = r.holesCount || 9;
+        return r.scores.every(function (arr) { return playedCount(arr) === rHoles; });
+      });
+      var bestDiffPerRound = completed.map(function (r) {
+        var rHoles = r.holesCount || 9;
+        var rPar = (r.parPerHole && r.parPerHole.length === rHoles) ? r.parPerHole : defaultParPerHole(rHoles);
+        return Math.min.apply(null, r.scores.map(function (arr) { return sumArr(arr) - sumParForPlayed(arr, rPar); }));
+      });
+      var statsHtml = '';
+      if (bestDiffPerRound.length > 0) {
+        var best = Math.min.apply(null, bestDiffPerRound);
+        var avg = bestDiffPerRound.reduce(function (a, b) { return a + b; }, 0) / bestDiffPerRound.length;
+        statsHtml = rounds.length + ' rundor · bästa <strong>' + diffLabel(best) +
+          '</strong> · snitt ' + diffLabel(Math.round(avg));
+      } else {
+        statsHtml = rounds.length + ' ' + (rounds.length === 1 ? 'runda' : 'rundor');
+      }
+
+      var groupDiv = document.createElement('div');
+      groupDiv.className = 'course-group';
+      groupDiv.innerHTML =
+        '<div class="course-group-header"><h3>' + courseName + '</h3>' +
+        '<div class="course-group-stats">' + statsHtml + '</div></div>';
+
+      rounds.forEach(function (r) {
+        var log = buildLog(r);
+        var namesLabel = r.players.map(function (n, i) { return n || (playerLabel(i)); }).join(' · ');
+        var variantLabel = r.courseVariant ? (' · ' + r.courseVariant) : '';
+        var div = document.createElement('div');
+        div.className = 'history-item';
+        div.innerHTML =
+          '<div class="history-head"><strong>' + r.date + ' · ' + r.startTime + variantLabel + '</strong><span>' +
+          namesLabel + '</span></div>' +
+          '<pre class="log">' + log.replace(/</g, '&lt;') + '</pre>' +
+          '<div class="panel-btns">' +
+          '<button class="btn-ghost-dark" data-action="copy" type="button">Kopiera</button>' +
+          '<button class="btn-ghost-dark" data-action="download" type="button">Ladda ner</button>' +
+          '<button class="btn-danger" data-action="delete" type="button">Ta bort</button>' +
+          '</div>';
+        div.querySelector('[data-action="copy"]').addEventListener('click', function () { copyText(log); });
+        div.querySelector('[data-action="download"]').addEventListener('click', function () {
+          downloadText(log, 'golfrunda_' + r.date + '.txt');
+        });
+        div.querySelector('[data-action="delete"]').addEventListener('click', function () {
+          roundHistory = roundHistory.filter(function (item) { return item.id !== r.id; });
+          persistHistory();
+          renderHistory();
+        });
+        groupDiv.appendChild(div);
+      });
+
+      historyBody.appendChild(groupDiv);
+    });
+  }
+
+  function copyText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        showToast(t('toast_copied'));
+      }, function () { fallbackCopy(text); });
+    } else {
+      fallbackCopy(text);
+    }
+  }
+  function fallbackCopy(text) {
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast(t('toast_copied'));
+    } catch (e) {
+      showToast(t('toast_copy_failed'));
+    }
+  }
+  function downloadText(text, filename, mime) {
+    var blob = new Blob([text], { type: (mime || 'text/plain') + ';charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // ---- events ----
+  dateInput.addEventListener('change', function (e) { state.date = e.target.value; render(); });
+  timeInput.addEventListener('change', function (e) { state.startTime = e.target.value; render(); });
+  clubInput.addEventListener('input', function (e) {
+    state.club = e.target.value;
+    clubResultsSelect.style.display = 'none';
+    persistRound();
+  });
+  // ---- course guide images (overview + per-hole) ----
+  var mapGuidePanel = document.getElementById('mapGuidePanel');
+  var mapOverviewImg = document.getElementById('mapOverviewImg');
+  var mapHoleSelect = document.getElementById('mapHoleSelect');
+  var mapHoleImg = document.getElementById('mapHoleImg');
+  var mapHolePrev = document.getElementById('mapHolePrev');
+  var mapHoleNext = document.getElementById('mapHoleNext');
+  var currentMapSlug = null;
+
+  function mapHoleLabel(n) {
+    var s = t('map_hole_label');
+    if (!s || s === 'map_hole_label') s = 'Hål';
+    return s + ' ' + n;
+  }
+
+  function updateMapGuide() {
+    var known = findKnownCourse(state.club);
+    var slug = known && known.mapSlug;
+    if (!slug) {
+      mapGuidePanel.style.display = 'none';
+      currentMapSlug = null;
+      return;
+    }
+    mapGuidePanel.style.display = '';
+    if (slug !== currentMapSlug) {
+      currentMapSlug = slug;
+      mapHoleSelect.innerHTML = '';
+      for (var h = 0; h < HOLES; h++) {
+        var opt = document.createElement('option');
+        opt.value = h + 1;
+        opt.textContent = mapHoleLabel(h + 1);
+        mapHoleSelect.appendChild(opt);
+      }
+      mapHoleSelect.value = focusedHole + 1;
+      if (mapGuidePanel.open) loadMapImages();
+      else { mapOverviewImg.style.display = 'none'; mapHoleImg.style.display = 'none'; }
+    }
+  }
+  function loadMapImages() {
+    if (!currentMapSlug) return;
+    mapOverviewImg.src = 'images/' + currentMapSlug + '-banguide-oversikt.png';
+    mapOverviewImg.style.display = '';
+    mapOverviewImg.onerror = function () { mapOverviewImg.style.display = 'none'; };
+    var h = Number(mapHoleSelect.value) || 1;
+    mapHoleImg.src = 'images/' + currentMapSlug + '-banguide-hal-' + h + '.png';
+    mapHoleImg.style.display = '';
+    mapHoleImg.onerror = function () { mapHoleImg.style.display = 'none'; };
+  }
+  function stepMapHole(delta) {
+    var current = Number(mapHoleSelect.value) || 1;
+    var next = current + delta;
+    if (next < 1) next = HOLES;
+    if (next > HOLES) next = 1;
+    mapHoleSelect.value = next;
+    if (mapGuidePanel.open) loadMapImages();
+  }
+  mapGuidePanel.addEventListener('toggle', function () {
+    if (mapGuidePanel.open) loadMapImages();
+  });
+  mapHoleSelect.addEventListener('change', function () {
+    if (mapGuidePanel.open) loadMapImages();
+  });
+  mapHolePrev.addEventListener('click', function () { stepMapHole(-1); });
+  mapHoleNext.addEventListener('click', function () { stepMapHole(1); });
+
+  // swipe left/right on the hole image to browse holes
+  (function () {
+    var startX = null, startY = null;
+    mapHoleImg.addEventListener('touchstart', function (e) {
+      if (e.touches.length !== 1) return;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+    }, { passive: true });
+    mapHoleImg.addEventListener('touchend', function (e) {
+      if (startX == null) return;
+      var endX = e.changedTouches[0].clientX;
+      var endY = e.changedTouches[0].clientY;
+      var dx = endX - startX;
+      var dy = endY - startY;
+      startX = null; startY = null;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+        stepMapHole(dx < 0 ? 1 : -1);
+      }
+    }, { passive: true });
+  })();
+
+  function applyKnownCourseData(known, showToastMsg) {
+    if (!known) { updateMapGuide(); return; }
+    var courseHoles = known.parPerHole ? known.parPerHole.length : (known.strokeIndex ? known.strokeIndex.length : null);
+    if (courseHoles && courseHoles !== HOLES) {
+      // only auto-switch the round length if nothing has been entered yet — never silently discard scores
+      if (!hasAnyScoreEntered()) {
+        HOLES = courseHoles;
+        state.holesCount = HOLES;
+        state.scores = state.players.map(function () { return Array(HOLES).fill(''); });
+        parPerHole = known.parPerHole ? known.parPerHole.slice() : defaultParPerHole(HOLES);
+        state.parPerHole = parPerHole;
+        state.strokeIndex = known.strokeIndex ? known.strokeIndex.slice() : defaultStrokeIndex(HOLES);
+        rebuildHoleColumns();
+        rebuildPlayerRows();
+        renderPlayerFields();
+        updateHolesToggleUI();
+        persistRound();
+        render();
+        updateMapGuide();
+        autoCalcExtraForAllPlayers();
+        if (showToastMsg) showToast(t('toast_course_and_holes_filled', { course: known.name, holes: HOLES }));
+        return;
+      }
+      // hole counts differ but there's already data on the scorecard — only fill what still fits
+      if (known.strokeIndex && known.strokeIndex.length === HOLES) state.strokeIndex = known.strokeIndex.slice();
+      persistRound();
+      render();
+      updateMapGuide();
+      autoCalcExtraForAllPlayers();
+      if (showToastMsg) showToast(t('toast_stroke_index_filled', { course: known.name }));
+      return;
+    }
+    if (known.parPerHole && known.parPerHole.length === HOLES) {
+      parPerHole = known.parPerHole.slice();
+      state.parPerHole = parPerHole;
+      rebuildHoleColumns();
+    }
+    if (known.strokeIndex && known.strokeIndex.length === HOLES) {
+      state.strokeIndex = known.strokeIndex.slice();
+    }
+    persistRound();
+    render();
+    updateMapGuide();
+    autoCalcExtraForAllPlayers();
+    if (showToastMsg) showToast(t('toast_stroke_index_filled', { course: known.name }));
+  }
+
+  clubInput.addEventListener('blur', function (e) {
+    var known = lookupCourseStrokeIndex(e.target.value);
+    applyKnownCourseData(known, true);
+  });
+
+  function haversineKm(lat1, lon1, lat2, lon2) {
+    var R = 6371;
+    var dLat = (lat2 - lat1) * Math.PI / 180;
+    var dLon = (lon2 - lon1) * Math.PI / 180;
+    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  function setCourseStatus(msg, type) {
+    courseStatus.textContent = msg;
+    courseStatus.className = 'course-status' + (type ? ' ' + type : '');
+  }
+
+  function getPosition() {
+    return new Promise(function (resolve, reject) {
+      if (!navigator.geolocation) {
+        reject(new Error(t('geo_not_supported')));
+        return;
+      }
+      // enableHighAccuracy:false uses wifi/cell-based positioning instead of raw GPS —
+      // noticeably faster to resolve, and plenty precise for finding clubs within ~25km.
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: false,
+        timeout: 10000,
+        maximumAge: 300000
+      });
+    });
+  }
+
+  var OVERPASS_ENDPOINTS = [
+    'https://overpass.kumi.systems/api/interpreter',
+    'https://z.overpass-api.de/api/interpreter',
+    'https://lz4.overpass-api.de/api/interpreter'
+  ];
+  var OVERPASS_TIMEOUT_MS = 6000;
+
+  function fetchWithTimeout(url, options, timeoutMs) {
+    var controller = window.AbortController ? new AbortController() : null;
+    var timer = null;
+    if (controller) {
+      options = Object.assign({}, options, { signal: controller.signal });
+      timer = setTimeout(function () { controller.abort(); }, timeoutMs);
+    }
+    return fetch(url, options).finally(function () {
+      if (timer) clearTimeout(timer);
+    });
+  }
+
+  // Fires the query at every mirror at the same time and uses whichever answers first,
+  // instead of waiting for one to fully time out before trying the next — much faster
+  // in practice since a single slow/unresponsive mirror no longer blocks the whole search.
+  function fetchOverpass(query) {
+    var attempts = OVERPASS_ENDPOINTS.map(function (url) {
+      return fetchWithTimeout(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'data=' + encodeURIComponent(query)
+      }, OVERPASS_TIMEOUT_MS).then(function (resp) {
+        if (!resp.ok) throw new Error('status ' + resp.status);
+        return resp.json();
+      });
+    });
+
+    if (window.Promise && Promise.any) {
+      return Promise.any(attempts).catch(function () {
+        throw new Error(t('geo_lookup_failed'));
+      });
+    }
+    // Fallback for older browsers without Promise.any: resolve with the first success,
+    // reject only once every attempt has failed.
+    return new Promise(function (resolve, reject) {
+      var remaining = attempts.length;
+      attempts.forEach(function (p) {
+        p.then(resolve).catch(function () {
+          remaining--;
+          if (remaining === 0) reject(new Error(t('geo_lookup_failed')));
+        });
+      });
+    });
+  }
+
+  function overpassGolfCourses(lat, lon, radiusMeters) {
+    var query = '[out:json][timeout:20];(' +
+      'node["leisure"="golf_course"](around:' + radiusMeters + ',' + lat + ',' + lon + ');' +
+      'way["leisure"="golf_course"](around:' + radiusMeters + ',' + lat + ',' + lon + ');' +
+      'relation["leisure"="golf_course"](around:' + radiusMeters + ',' + lat + ',' + lon + ');' +
+      ');out center tags;';
+    return fetchOverpass(query).then(function (data) {
+      return (data.elements || [])
+        .filter(function (el) { return el.tags && el.tags.name; })
+        .map(function (el) {
+          var elat = el.lat != null ? el.lat : (el.center && el.center.lat);
+          var elon = el.lon != null ? el.lon : (el.center && el.center.lon);
+          if (elat == null || elon == null) return null;
+          return { name: el.tags.name, lat: elat, lon: elon, dist: haversineKm(lat, lon, elat, elon) };
+        })
+        .filter(Boolean)
+        .sort(function (a, b) { return a.dist - b.dist; });
+    });
+  }
+
+  var lastClubResults = [];
+
+  function findNearbyClubs() {
+    locateBtn.disabled = true;
+    locateBtn.classList.add('loading');
+    setCourseStatus(t('geo_fetching_position'));
+    clubResultsSelect.style.display = 'none';
+
+    getPosition().then(function (pos) {
+      var lat = pos.coords.latitude, lon = pos.coords.longitude;
+      setCourseStatus(t('geo_searching_clubs'));
+      return overpassGolfCourses(lat, lon, 25000).then(function (candidates) {
+        // dedupe by name, keep nearest occurrence of each
+        var seen = {};
+        var deduped = [];
+        candidates.forEach(function (c) {
+          if (!seen[c.name]) { seen[c.name] = true; deduped.push(c); }
+        });
+        if (deduped.length === 0) {
+          setCourseStatus('Ingen golfklubb hittades inom 25 km. Fyll i manuellt.', 'error');
+          showToast(t('toast_no_club_found'));
+          return;
+        }
+        lastClubResults = deduped.slice(0, 8);
+        clubResultsSelect.innerHTML = '';
+        var placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = lastClubResults.length + ' klubbar hittade — välj en';
+        clubResultsSelect.appendChild(placeholder);
+        lastClubResults.forEach(function (c, i) {
+          var opt = document.createElement('option');
+          opt.value = String(i);
+          opt.textContent = c.name + ' (' + c.dist.toFixed(1) + ' km)';
+          clubResultsSelect.appendChild(opt);
+        });
+        clubResultsSelect.style.display = 'block';
+        setCourseStatus(lastClubResults.length + ' klubbar hittade — välj i listan nedan', 'success');
+      });
+    }).catch(function (err) {
+      var msg = t('geo_could_not_fetch');
+      if (err && err.code === 1) msg = 'Platsåtkomst nekad. Tillåt plats för Safari i Inställningar.';
+      else if (err && err.code === 2) msg = t('geo_could_not_determine');
+      else if (err && err.code === 3) msg = t('geo_timeout');
+      else if (err && err.message) msg = err.message;
+      setCourseStatus(msg, 'error');
+      showToast(t('toast_locate_failed'));
+    }).finally(function () {
+      locateBtn.disabled = false;
+      locateBtn.classList.remove('loading');
+    });
+  }
+
+  clubResultsSelect.addEventListener('change', function (e) {
+    var idx = e.target.value;
+    if (idx === '') return;
+    var chosen = lastClubResults[Number(idx)];
+    if (!chosen) return;
+    state.club = chosen.name;
+    var known = lookupCourseStrokeIndex(chosen.name);
+    setCourseStatus(t('geo_selected_club', { club: chosen.name }), 'success');
+    if (known) {
+      applyKnownCourseData(known, false);
+      showToast(t('toast_club_and_index_filled', { club: chosen.name }));
+    } else {
+      render();
+      showToast(t('toast_club_filled', { club: chosen.name }));
+    }
+  });
+
+  locateBtn.addEventListener('click', findNearbyClubs);
+
+  document.getElementById('statsPanel').addEventListener('toggle', function (e) {
+    if (e.target.open) renderStats();
+  });
+
+  courseFilter.addEventListener('change', function (e) {
+    courseFilterValue = e.target.value;
+    renderHistory();
+  });
+
+  addPlayerBtn.addEventListener('click', function () {
+    if (state.players.length >= MAX_PLAYERS) return;
+    state.players.push('');
+    state.scores.push(Array(HOLES).fill(''));
+    state.handicaps.push('');
+    state.extras.push('');
+    state.genders.push('');
+    rebuildPlayerRows();
+    renderPlayerFields();
+    render();
+    showToast(t('toast_player_added'));
+  });
+
+  document.getElementById('newRoundBtn').addEventListener('click', function () {
+    document.getElementById('confirmNew').classList.add('show');
+    document.getElementById('confirmClear').classList.remove('show');
+  });
+  document.getElementById('cancelNewBtn').addEventListener('click', function () {
+    document.getElementById('confirmNew').classList.remove('show');
+  });
+  document.getElementById('confirmNewBtn').addEventListener('click', function () {
+    state = defaultRound();
+    roundCompletionCelebrated = false;
+    document.getElementById('confirmNew').classList.remove('show');
+    clubResultsSelect.style.display = 'none';
+    setCourseStatus('', '');
+    rebuildPlayerRows();
+    renderPlayerFields();
+    render();
+    showToast(t('toast_new_round_started'));
+  });
+
+  document.getElementById('clearScoresBtn').addEventListener('click', function () {
+    document.getElementById('confirmClear').classList.add('show');
+    document.getElementById('confirmNew').classList.remove('show');
+  });
+  document.getElementById('cancelClearBtn').addEventListener('click', function () {
+    document.getElementById('confirmClear').classList.remove('show');
+  });
+  document.getElementById('confirmClearBtn').addEventListener('click', function () {
+    state.scores = state.players.map(function () { return Array(HOLES).fill(''); });
+    roundCompletionCelebrated = false;
+    document.getElementById('confirmClear').classList.remove('show');
+    render();
+    showToast(t('toast_scores_cleared'));
+  });
+  function performSaveToHistory() {
+    var id = state.date + '_' + state.startTime + '_' + Date.now();
+    var entry = {
+      id: id, date: state.date, startTime: state.startTime,
+      club: state.club || '',
+      players: state.players.slice(),
+      handicaps: state.handicaps.slice(),
+      extras: state.extras.slice(),
+      genders: state.genders.slice(),
+      holesCount: HOLES,
+      parPerHole: parPerHole.slice(),
+      scoringMode: state.scoringMode || 'stroke',
+      strokeIndex: state.strokeIndex.slice(),
+      scores: state.scores.map(function (arr) { return arr.slice(); }),
+      savedAt: new Date().toISOString()
+    };
+    roundHistory = [entry].concat(roundHistory).slice(0, 50);
+    persistHistory();
+    renderHistory();
+    showToast(t('toast_round_saved'));
+  }
+
+  function computeStandings() {
+    var stableford = state.scoringMode === 'stableford';
+    return state.players.map(function (name, p) {
+      var extra = Number(state.extras[p]) || 0;
+      var played = playedCount(state.scores[p]);
+      var sum = sumArr(state.scores[p]);
+      var netParTotal = 0;
+      for (var h = 0; h < HOLES; h++) {
+        if (state.scores[p][h] !== '' && state.scores[p][h] != null) {
+          netParTotal += netParForHole(state.strokeIndex, extra, h);
+        }
+      }
+      var grossDiff = played > 0 ? sum - sumParForPlayed(state.scores[p], parPerHole) : null;
+      var netDiff = played > 0 ? sum - netParTotal : null;
+      var points = played > 0 ? sumStablefordForPlayer(state.scores[p], state.strokeIndex, extra, parPerHole) : null;
+      var rankMetric = played > 0 ? (stableford ? points : (extra > 0 ? netDiff : grossDiff)) : null;
+      return {
+        name: name || (playerLabel(p)), played: played, sum: sum, points: points,
+        grossDiff: grossDiff, netDiff: netDiff, hasExtra: extra > 0, rankMetric: rankMetric
+      };
+    }).sort(function (a, b) {
+      if (a.rankMetric == null && b.rankMetric == null) return 0;
+      if (a.rankMetric == null) return 1;
+      if (b.rankMetric == null) return -1;
+      return stableford ? (b.rankMetric - a.rankMetric) : (a.rankMetric - b.rankMetric);
+    });
+  }
+
+  function openSummaryModal() {
+    var stableford = state.scoringMode === 'stableford';
+    var standings = computeStandings();
+    var body = document.getElementById('summaryBody');
+    body.innerHTML = '';
+    var allComplete = standings.every(function (s) { return s.played === HOLES; });
+    if (!allComplete) {
+      var warn = document.createElement('div');
+      warn.className = 'summary-warning';
+      warn.textContent = t('summary_incomplete_warning');
+      body.appendChild(warn);
+    }
+    standings.forEach(function (s, i) {
+      var isWinner = i === 0 && s.played > 0;
+      var row = document.createElement('div');
+      row.className = 'summary-row' + (isWinner ? ' summary-winner' : '');
+      var place = s.played > 0 ? (i + 1) + '.' : '—';
+      var scoreText;
+      if (!s.played) {
+        scoreText = t('summary_no_result');
+      } else if (stableford) {
+        scoreText = s.points + ' ' + t('points_suffix') + '  ·  ' + s.sum + ' ' + t('summary_strokes_suffix');
+      } else {
+        scoreText = s.sum + ' ' + t('summary_strokes_suffix') + ' (' + diffLabel(s.grossDiff) + ')' + (s.hasExtra ? '  ·  ' + t('netto_label') + ' ' + diffLabel(s.netDiff) : '');
+      }
+      row.innerHTML =
+        '<span class="summary-place">' + place + '</span>' +
+        '<span class="summary-name">' + (isWinner ? '🏆 ' : '') + s.name + '</span>' +
+        '<span class="summary-score">' + scoreText + '</span>';
+      body.appendChild(row);
+    });
+    document.getElementById('summaryModal').style.display = 'flex';
+  }
+
+  document.getElementById('saveHistoryBtn').addEventListener('click', openSummaryModal);
+  document.getElementById('summaryCancelBtn').addEventListener('click', function () {
+    document.getElementById('summaryModal').style.display = 'none';
+  });
+  document.getElementById('summarySaveBtn').addEventListener('click', function () {
+    performSaveToHistory();
+    document.getElementById('summaryModal').style.display = 'none';
+  });
+  document.getElementById('copyLogBtn').addEventListener('click', function () { copyText(buildLog(state)); });
+
+  function drawScorecardImage() {
+    var canvas = document.createElement('canvas');
+    var dpr = window.devicePixelRatio || 1;
+    var W = HOLES > 9 ? 980 : 640;
+    var rowH = 30;
+    var players = state.players;
+    var H = 150 + players.length * (rowH + 14) + 40;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    var ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    // background
+    ctx.fillStyle = '#f5f0e1';
+    ctx.fillRect(0, 0, W, H);
+
+    // header band
+    ctx.fillStyle = '#1c3e2d';
+    ctx.fillRect(0, 0, W, 92);
+    ctx.fillStyle = '#c9a227';
+    ctx.font = '700 10px IBM Plex Mono, monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('KLUBBRUNDA · ' + HOLES + ' HÅL · PAR ' + totalPar(), 20, 24);
+    ctx.fillStyle = '#f7f4e9';
+    ctx.font = '800 22px Bitter, serif';
+    ctx.fillText(courseLabel(state) || 'Niohåls-scorekort', 20, 52);
+    ctx.fillStyle = '#a9c2ab';
+    ctx.font = '11px IBM Plex Mono, monospace';
+    ctx.fillText(state.date + '   ·   ' + state.startTime, 20, 74);
+
+    // hole header row
+    var colLabelW = 108;
+    var totColW = 92;
+    var holeColW = (W - 40 - colLabelW - totColW) / HOLES;
+    var y = 118;
+    ctx.font = '700 11px Bitter, serif';
+    ctx.fillStyle = '#2b2b2b';
+    ctx.textAlign = 'center';
+    for (var h = 0; h < HOLES; h++) {
+      ctx.fillText(String(h + 1), 20 + colLabelW + holeColW * h + holeColW / 2, y);
+    }
+    ctx.fillText('Tot', 20 + colLabelW + holeColW * HOLES + totColW / 2, y);
+    ctx.strokeStyle = '#2b2b2b';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(20, y + 8);
+    ctx.lineTo(W - 20, y + 8);
+    ctx.stroke();
+
+    // par row
+    y += 26;
+    ctx.font = '11px IBM Plex Mono, monospace';
+    ctx.fillStyle = '#6b6552';
+    ctx.textAlign = 'left';
+    ctx.fillText('Par', 20, y);
+    ctx.textAlign = 'center';
+    for (var h2 = 0; h2 < HOLES; h2++) {
+      ctx.fillText(String(parAt(h2)), 20 + colLabelW + holeColW * h2 + holeColW / 2, y);
+    }
+    ctx.fillText(String(totalPar()), 20 + colLabelW + holeColW * HOLES + totColW / 2, y);
+
+    // player rows
+    players.forEach(function (name, p) {
+      y += rowH;
+      ctx.textAlign = 'left';
+      ctx.font = '700 13px Bitter, serif';
+      ctx.fillStyle = PLAYER_COLORS[p % PLAYER_COLORS.length];
+      var label = name || (playerLabel(p));
+      ctx.fillText(label.length > 14 ? label.slice(0, 13) + '…' : label, 20, y);
+
+      ctx.font = '600 12px IBM Plex Mono, monospace';
+      ctx.fillStyle = '#2b2b2b';
+      ctx.textAlign = 'center';
+      for (var h3 = 0; h3 < HOLES; h3++) {
+        var v = state.scores[p][h3];
+        ctx.fillText(v === '' || v == null ? '–' : String(v), 20 + colLabelW + holeColW * h3 + holeColW / 2, y);
+      }
+      var sum = sumArr(state.scores[p]);
+      var played = playedCount(state.scores[p]);
+      ctx.font = '700 11px IBM Plex Mono, monospace';
+      var totalText = played > 0 ? sum + ' (' + diffLabel(sum - sumParForPlayed(state.scores[p], parPerHole)) + ')' : '–';
+      ctx.fillText(totalText, 20 + colLabelW + holeColW * HOLES + totColW / 2, y);
+    });
+
+    // footer
+    ctx.font = '9.5px IBM Plex Mono, monospace';
+    ctx.fillStyle = '#a9c2ab';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#8a8060';
+    ctx.fillText('Skapat med Niohåls-scorekort', 20, H - 14);
+
+    return new Promise(function (resolve) {
+      canvas.toBlob(function (blob) { resolve(blob); }, 'image/png');
+    });
+  }
+
+  document.getElementById('shareBtn').addEventListener('click', function () {
+    var text = buildLog(state);
+    var title = 'Golfrunda' + (state.club ? ' – ' + state.club : '');
+
+    drawScorecardImage().then(function (blob) {
+      if (blob && navigator.canShare && navigator.share) {
+        var file = new File([blob], 'scorekort.png', { type: 'image/png' });
+        if (navigator.canShare({ files: [file] })) {
+          return navigator.share({ files: [file], title: title, text: text });
+        }
+      }
+      if (navigator.share) {
+        return navigator.share({ title: title, text: text });
+      }
+      copyText(text);
+      showToast(t('toast_share_unsupported'));
+    }).catch(function (err) {
+      if (err && err.name === 'AbortError') return; // user cancelled the share sheet
+      copyText(text);
+      showToast(t('toast_share_failed'));
+    });
+  });
+
+  // ---- backup / restore ----
+  function buildBackupPayload() {
+    return {
+      appVersion: 'niohals-scorekort-backup',
+      formatVersion: 1,
+      exportedAt: new Date().toISOString(),
+      history: roundHistory,
+      playerProfiles: playerProfiles,
+      currentRound: state
+    };
+  }
+
+  document.getElementById('soundToggleBtn').textContent = soundEnabled ? '🔊' : '🔇';
+  document.getElementById('soundToggleBtn').addEventListener('click', function () {
+    setSoundEnabled(!soundEnabled);
+    showToast(soundEnabled ? t('toast_sound_on') : t('toast_sound_off'));
+  });
+
+  applyTheme(currentTheme);
+  document.getElementById('themeToggleBtn').addEventListener('click', function () {
+    applyTheme(currentTheme === 'light' ? 'dark' : 'light');
+  });
+
+  function updateHolesToggleUI() {
+    document.querySelectorAll('#holesToggle .holes-btn').forEach(function (btn) {
+      btn.classList.toggle('active', Number(btn.getAttribute('data-holes')) === HOLES);
+    });
+  }
+  function hasAnyScoreEntered() {
+    return state.scores.some(function (arr) { return arr.some(function (v) { return v !== '' && v != null; }); });
+  }
+  var pendingHoles = null;
+  function switchHoleCount(newHoles) {
+    HOLES = newHoles;
+    parPerHole = defaultParPerHole(newHoles);
+    state.holesCount = newHoles;
+    state.parPerHole = parPerHole;
+    state.strokeIndex = defaultStrokeIndex(newHoles);
+    state.scores = state.players.map(function () { return Array(newHoles).fill(''); });
+    roundCompletionCelebrated = false;
+    persistRound();
+    rebuildHoleColumns();
+    rebuildPlayerRows();
+    renderPlayerFields();
+    render();
+    updateHolesToggleUI();
+    showToast(t(newHoles === 18 ? 'holes_18' : 'holes_9'));
+  }
+  document.querySelectorAll('#holesToggle .holes-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var newHoles = Number(btn.getAttribute('data-holes'));
+      if (newHoles === HOLES) return;
+      if (hasAnyScoreEntered()) {
+        pendingHoles = newHoles;
+        document.getElementById('confirmHoles').classList.add('show');
+      } else {
+        switchHoleCount(newHoles);
+      }
+    });
+  });
+  document.getElementById('cancelHolesBtn').addEventListener('click', function () {
+    pendingHoles = null;
+    document.getElementById('confirmHoles').classList.remove('show');
+  });
+  document.getElementById('confirmHolesBtn').addEventListener('click', function () {
+    if (pendingHoles != null) switchHoleCount(pendingHoles);
+    pendingHoles = null;
+    document.getElementById('confirmHoles').classList.remove('show');
+  });
+  updateHolesToggleUI();
+
+  function updateScoringModeUI() {
+    document.querySelectorAll('#scoringModeToggle .holes-btn').forEach(function (btn) {
+      btn.classList.toggle('active', btn.getAttribute('data-mode') === (state.scoringMode || 'stroke'));
+    });
+  }
+  document.querySelectorAll('#scoringModeToggle .holes-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var mode = btn.getAttribute('data-mode');
+      if (mode === state.scoringMode) return;
+      state.scoringMode = mode;
+      persistRound();
+      updateScoringModeUI();
+      render();
+      showToast(t(mode === 'stableford' ? 'scoring_stableford' : 'scoring_stroke'));
+    });
+  });
+  updateScoringModeUI();
+
+  document.getElementById('langSelect').addEventListener('change', function (e) {
+    setLanguage(e.target.value);
+  });
+
+  // ---- quick score entry bar ----
+  Array.prototype.forEach.call(document.querySelectorAll('#quickEntryBar button'), function (btn) {
+    btn.addEventListener('mousedown', function (e) { e.preventDefault(); }); // keep focus on the score input when possible
+    btn.addEventListener('click', function () {
+      if (!currentScoreCell) return;
+      if (quickBarHideTimer) { clearTimeout(quickBarHideTimer); quickBarHideTimer = null; }
+      var p = currentScoreCell.p, h = currentScoreCell.h;
+      var val = btn.getAttribute('data-score');
+      state.scores[p][h] = val;
+      var el = scoreInputs[p] && scoreInputs[p][h];
+      if (el) el.value = val;
+      render();
+      if (val !== '') {
+        var extraFb2 = Number(state.extras[p]) || 0;
+        var npFb2 = netParForHole(state.strokeIndex, extraFb2, h);
+        playScoreFeedback(scoreClass(val, npFb2));
+        if (val === '1') celebrateHoleInOne();
+        advanceToNextCell(p, h);
+        checkRoundComplete();
+      } else if (el) {
+        el.focus(); // clear button: stay on the same cell so it can be re-entered right away
+        checkRoundComplete();
+      }
+    });
+  });
+
+  document.getElementById('exportBackupBtn').addEventListener('click', function () {
+    var payload = buildBackupPayload();
+    var stamp = todayISO();
+    downloadText(JSON.stringify(payload, null, 2), 'golfapp-backup_' + stamp + '.json', 'application/json');
+    showToast(t('toast_backup_downloaded'));
+  });
+
+  var pendingImport = null;
+  var importBackupFile = document.getElementById('importBackupFile');
+
+  document.getElementById('importBackupBtn').addEventListener('click', function () {
+    importBackupFile.value = '';
+    importBackupFile.click();
+  });
+
+  importBackupFile.addEventListener('change', function (e) {
+    var file = e.target.files && e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      var data;
+      try {
+        data = JSON.parse(reader.result);
+      } catch (err) {
+        showToast(t('toast_backup_invalid_file'));
+        return;
+      }
+      if (!data || (!Array.isArray(data.history) && !data.playerProfiles)) {
+        showToast(t('toast_backup_not_recognized'));
+        return;
+      }
+      pendingImport = data;
+      var roundCount = Array.isArray(data.history) ? data.history.length : 0;
+      document.getElementById('confirmImportText').textContent =
+        'Återställ från fil (' + roundCount + ' sparade rundor)? Nuvarande historik och spelarminnen skrivs över.';
+      document.getElementById('confirmImport').classList.add('show');
+    };
+    reader.onerror = function () {
+      showToast(t('toast_backup_read_failed'));
+    };
+    reader.readAsText(file);
+  });
+
+  document.getElementById('cancelImportBtn').addEventListener('click', function () {
+    pendingImport = null;
+    document.getElementById('confirmImport').classList.remove('show');
+  });
+
+  document.getElementById('confirmImportBtn').addEventListener('click', function () {
+    if (!pendingImport) return;
+    if (Array.isArray(pendingImport.history)) {
+      roundHistory = pendingImport.history;
+      persistHistory();
+    }
+    if (pendingImport.playerProfiles && typeof pendingImport.playerProfiles === 'object') {
+      playerProfiles = pendingImport.playerProfiles;
+      try { localStorage.setItem(STORAGE_PROFILES, JSON.stringify(playerProfiles)); } catch (e) {}
+    }
+    if (pendingImport.currentRound && typeof pendingImport.currentRound === 'object') {
+      state = pendingImport.currentRound;
+      if (!state.genders) state.genders = state.players.map(function () { return ''; });
+      persistRound();
+    }
+    roundCompletionCelebrated = isRoundComplete();
+    pendingImport = null;
+    document.getElementById('confirmImport').classList.remove('show');
+    rebuildPlayerRows();
+    renderPlayerFields();
+    renderKnownPlayersList();
+    render();
+    renderHistory();
+    showToast(t('toast_backup_restored'));
+  });
+
+  rebuildPlayerRows();
+  renderPlayerFields();
+  renderKnownPlayersList();
+  render();
+  renderHistory();
+  loadCourseDatabase().then(function () { updateMapGuide(); });
+  renderLanguageOptions();
+  loadTranslations();
+})();
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function () {
+        // best-effort only — app still works fully without offline caching
+      });
+    });
+  }
+</script>
 </body>
 </html>
